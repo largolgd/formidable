@@ -54,3 +54,12 @@
 // against ZeroBounceStubServlet.
 [fmdbsample:zeroBounceEmailAction] > jnt:content, fmdbmix:fieldAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_zeroBounceEmailAction') autocreated i18n
+
+// Writes a unique, time-based identifier (20261026-143012-4F2A: UTC date, time, four random hex digits) into
+// a hidden field of the form, on the server, when the submission arrives. It must come BEFORE the actions
+// that use the value (save, email, forward) in the form's action list: they run in order and read the value
+// this action has put in the submission. Whatever the browser sent for that field is overwritten. It never
+// writes to the repository, so it stays available while the platform is in read-only maintenance.
+[fmdbsample:submissionIdAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, mix:title
+ - jcr:title (string) = resourceBundle('fmdbsample_submissionIdAction') autocreated i18n
+ - fieldName (string) mandatory indexed=no
