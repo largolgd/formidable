@@ -1,5 +1,6 @@
 import type {JCRNodeWrapper} from "org.jahia.services.content";
 import {type ReactNode} from 'react';
+import type {StepButtons} from '~/utils/stepButtons';
 
 
 // Props mapped from JCR node properties by the JS modules library
@@ -29,6 +30,8 @@ export interface FormProps extends Omit<FormServerProps, 'destination'> {
 	locale: string;
 	stepLabels?: string[];
 	stepIds?: string[];
+	/** The navigation buttons each step offers, in the order of stepIds; a step without settings offers all. */
+	stepButtons?: StepButtons[];
 	captcha?: {siteKey: string; widgetVar: string; tokenField: string; widgetTimeoutSeconds?: number};
 	destinationUrl?: string;
 	submitActionUrl?: string;

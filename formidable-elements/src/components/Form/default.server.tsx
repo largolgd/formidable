@@ -12,6 +12,7 @@ import {useTranslation} from "react-i18next";
 import Form from "./Form.client";
 import {type FormServerProps} from "./types";
 import {resolveUrlPlaceholders, styleTagCss} from "~/utils/richTextUtils";
+import {stepButtonsOf} from "~/utils/stepButtons";
 
 const SETTINGS_BEAN_SERVICE = "org.jahia.api.settings.SettingsBean";
 // Absence of the mixin = the action is presumed to write to the repository (the
@@ -98,6 +99,12 @@ jahiaComponent(
 			: undefined;
 		const stepIds = stepNodes.length > 0
 			? stepNodes.map((s) => s.getIdentifier())
+			: undefined;
+		// Which navigation buttons each step offers, in the order of stepIds
+		const stepButtons = stepNodes.length > 0
+			? stepNodes.map((s) => stepButtonsOf(
+				getNodeProps<{showPreviousBtn?: boolean; showNextBtn?: boolean}>(s, ['showPreviousBtn', 'showNextBtn'])
+			))
 			: undefined;
 
 		// Captcha config is injected as request attributes by CaptchaRenderFilter (Java)
@@ -196,6 +203,7 @@ jahiaComponent(
 				locale: currentNode.getLanguage(),
 				stepLabels,
 				stepIds,
+				stepButtons,
 				captcha,
 			}}
 			>
