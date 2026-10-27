@@ -45,4 +45,14 @@ class EmailContentToContactFormActionTest {
                 EmailContentToContactFormAction.splitList("a@example.com;b@example.com"));
         assertEquals(List.of(), EmailContentToContactFormAction.splitList(null));
     }
+
+    @Test
+    void anAddressKeepsOneRoleWhateverItsCase() {
+        List<String> to = List.of("a@example.com");
+        List<String> cc = EmailContentToContactFormAction.withoutRepeats(List.of("A@Example.com", "b@example.com"), to);
+        List<String> bcc = EmailContentToContactFormAction.withoutRepeats(
+                EmailContentToContactFormAction.withoutRepeats(List.of("a@example.com", "B@example.com", "c@example.com"), to), cc);
+        assertEquals(List.of("b@example.com"), cc);
+        assertEquals(List.of("c@example.com"), bcc);
+    }
 }

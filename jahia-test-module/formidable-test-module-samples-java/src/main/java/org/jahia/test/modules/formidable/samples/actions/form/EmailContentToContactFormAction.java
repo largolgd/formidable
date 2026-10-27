@@ -82,17 +82,29 @@ public class EmailContentToContactFormAction implements FormAction {
             throw FormActionException.serverError("MailService is unavailable or disabled. Check Jahia SMTP configuration.");
         }
 
-        List<String> recipients = recipients(actionNode);
-        if (recipients.isEmpty()) {
-            log.warn("[Formidable sample] '{}': no valid address in the contact options picked, nothing sent", actionNode.getPath());
+        List<String> to = recipients(actionNode, "contacts", "customRecipients");
+        List<String> cc = recipients(actionNode, "ccContacts", "ccCustomRecipients");
+        List<String> bcc = recipients(actionNode, "bccContacts", "bccCustomRecipients");
+        if (to.isEmpty()) {
+            log.warn("[Formidable sample] '{}': no valid address to send to (Cc and Bcc need a main recipient), nothing sent",
+                    actionNode.getPath());
             return;
         }
+        // One address, one role: whoever is already in To is not copied, whoever is in To or Cc is not blind-copied.
+        cc = withoutRepeats(cc, to);
+        bcc = withoutRepeats(withoutRepeats(bcc, to), cc);
 
         String subject = headerSafe(formTitle(actionNode));
         String from = headerSafe(stringProperty(actionNode, "from"));
 
         MailMessage message = new MailMessage();
-        message.setTo(String.join(", ", recipients));
+        message.setTo(String.join(", ", to));
+        if (!cc.isEmpty()) {
+            message.setCc(String.join(", ", cc));
+        }
+        if (!bcc.isEmpty()) {
+            message.setBcc(String.join(", ", bcc));
+        }
         message.setFrom(isValid(from) ? from : null);
         message.setSubject(subject.isBlank() ? DEFAULT_SUBJECT : subject);
         message.setTextBody(textBody(subject, parameters));
@@ -101,21 +113,23 @@ public class EmailContentToContactFormAction implements FormAction {
         try {
             // Queued by Jahia's mail service: a delivery failure later on is logged by it, not raised here.
             mailService.sendMessage(message);
-            log.info("[Formidable sample] '{}': content sent to {} recipient(s)", actionNode.getPath(), recipients.size());
+            log.info("[Formidable sample] '{}': content sent to {} recipient(s), {} in copy, {} in blind copy",
+                    actionNode.getPath(), to.size(), cc.size(), bcc.size());
         } catch (Exception e) {
             throw FormActionException.serverError("Failed to send form content email to the contacts: " + e.getMessage(), e);
         }
     }
 
     /**
-     * The addresses of every option picked on the action, then the ones typed in {@code customRecipients},
-     * valid ones only, each once. Either source may be empty; the caller sends nothing when both are.
+     * The addresses of every option picked in {@code contactsProperty} of the action, then the ones typed in
+     * {@code customProperty}, valid ones only, each once. Either source may be empty.
      */
-    private static List<String> recipients(JCRNodeWrapper actionNode) throws FormActionException {
+    private static List<String> recipients(JCRNodeWrapper actionNode, String contactsProperty, String customProperty)
+            throws FormActionException {
         List<String> raw = new ArrayList<>();
         try {
-            if (actionNode.hasProperty("contacts")) {
-                for (JCRValueWrapper reference : actionNode.getProperty("contacts").getValues()) {
+            if (actionNode.hasProperty(contactsProperty)) {
+                for (JCRValueWrapper reference : actionNode.getProperty(contactsProperty).getValues()) {
                     JCRNodeWrapper option;
                     try {
                         option = reference.getNode();
@@ -134,8 +148,14 @@ public class EmailContentToContactFormAction implements FormAction {
         } catch (RepositoryException e) {
             throw FormActionException.serverError("Could not read the contact options of '" + actionNode.getPath() + "'", e);
         }
-        raw.addAll(splitList(stringProperty(actionNode, "customRecipients")));
+        raw.addAll(splitList(stringProperty(actionNode, customProperty)));
         return validAddresses(raw);
+    }
+
+    /** The addresses of {@code list} that are not in {@code already}, compared without regard to case. */
+    static List<String> withoutRepeats(List<String> list, List<String> already) {
+        List<String> seen = already.stream().map(a -> a.toLowerCase(Locale.ROOT)).collect(Collectors.toList());
+        return list.stream().filter(a -> !seen.contains(a.toLowerCase(Locale.ROOT))).collect(Collectors.toList());
     }
 
     /** The entries of a typed list, comma-separated like the addresses of Formidable's own e-mail actions. */
