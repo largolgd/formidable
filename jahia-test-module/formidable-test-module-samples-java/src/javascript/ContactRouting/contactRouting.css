@@ -1,0 +1,12 @@
+/* One rule: the field, the value it must hold, the contact that is added. */
+.fmdbRoutingGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: center;
+    width: 100%;
+}
+
+.fmdbRoutingGrid > * {
+    min-width: 0;
+}

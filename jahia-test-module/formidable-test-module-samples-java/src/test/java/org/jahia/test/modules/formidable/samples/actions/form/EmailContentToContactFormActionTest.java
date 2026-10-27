@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -44,6 +45,62 @@ class EmailContentToContactFormActionTest {
         assertEquals(List.of("a@example.com;b@example.com"),
                 EmailContentToContactFormAction.splitList("a@example.com;b@example.com"));
         assertEquals(List.of(), EmailContentToContactFormAction.splitList(null));
+    }
+
+    private static String rule(String sourceNodeId, String fieldName, String value, String contactId) {
+        return "{\"sourceNodeId\":\"" + sourceNodeId + "\",\"fieldName\":\"" + fieldName + "\",\"value\":\"" + value
+                + "\",\"contactId\":\"" + contactId + "\"}";
+    }
+
+    @Test
+    void readsTheRoutesAndLeavesOutTheOnesThatRouteNothing() {
+        List<EmailContentToContactFormAction.Route> routes = EmailContentToContactFormAction.parseRoutes(Arrays.asList(
+                rule("f1", "topic", "sales", "c1"),
+                rule("", "topic", "support", "c2"),     // named by its stored name only: still a route
+                rule("f1", "topic", "", "c3"),          // no value
+                rule("f1", "topic", "x", ""),           // no contact
+                rule("", "", "x", "c4"),                // no field
+                "{not json", " ", null));
+        assertEquals(List.of("c1", "c2"), routes.stream().map(EmailContentToContactFormAction.Route::contactId).toList());
+    }
+
+    @Test
+    void aRouteMatchesWhenItsFieldHoldsItsValue() {
+        List<EmailContentToContactFormAction.Route> routes = EmailContentToContactFormAction.parseRoutes(List.of(
+                rule("", "topic", "sales", "c1"), rule("", "topic", "support", "c2"), rule("", "country", "fr", "c3")));
+        Map<String, List<String>> submitted = Map.of("topic", List.of("sales"), "country", List.of("de"));
+        assertEquals(List.of("c1"),
+                EmailContentToContactFormAction.matchedContactIds(routes, EmailContentToContactFormAction.Route::fieldName, submitted));
+    }
+
+    @Test
+    void aFieldWithSeveralValuesMatchesOnAnyOfThem() {
+        List<EmailContentToContactFormAction.Route> routes = EmailContentToContactFormAction.parseRoutes(List.of(rule("", "topics", "b", "c1")));
+        assertEquals(List.of("c1"), EmailContentToContactFormAction.matchedContactIds(
+                routes, EmailContentToContactFormAction.Route::fieldName, Map.of("topics", List.of("a", "b"))));
+    }
+
+    @Test
+    void aFieldTheSubmissionDoesNotCarryMatchesNothing() {
+        List<EmailContentToContactFormAction.Route> routes = EmailContentToContactFormAction.parseRoutes(List.of(rule("", "topic", "sales", "c1")));
+        assertEquals(List.of(), EmailContentToContactFormAction.matchedContactIds(
+                routes, EmailContentToContactFormAction.Route::fieldName, Map.of("other", List.of("sales"))));
+    }
+
+    @Test
+    void aContactRoutedTwiceIsListedOnceInTheOrderOfTheRules() {
+        List<EmailContentToContactFormAction.Route> routes = EmailContentToContactFormAction.parseRoutes(List.of(
+                rule("", "topic", "sales", "c2"), rule("", "country", "fr", "c1"), rule("", "country", "fr", "c2")));
+        Map<String, List<String>> submitted = Map.of("topic", List.of("sales"), "country", List.of("fr"));
+        assertEquals(List.of("c2", "c1"),
+                EmailContentToContactFormAction.matchedContactIds(routes, EmailContentToContactFormAction.Route::fieldName, submitted));
+    }
+
+    @Test
+    void theValueIsComparedAsIsNotAsAPattern() {
+        List<EmailContentToContactFormAction.Route> routes = EmailContentToContactFormAction.parseRoutes(List.of(rule("", "topic", "Sales", "c1")));
+        assertEquals(List.of(), EmailContentToContactFormAction.matchedContactIds(
+                routes, EmailContentToContactFormAction.Route::fieldName, Map.of("topic", List.of("sales"))));
     }
 
     @Test

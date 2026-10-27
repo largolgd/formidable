@@ -1,0 +1,11 @@
+{
+	"contactRouting": {
+		"selectField": "Select a field",
+		"selectValue": "Select a value",
+		"value": "Value",
+		"selectContact": "Add the contact",
+		"noFields": "The form has no field that submits a value yet.",
+		"noContacts": "No contact option exists on this site yet.",
+		"loadError": "The form and the contact options could not be loaded."
+	}
+}

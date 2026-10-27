@@ -1,0 +1,20 @@
+{
+	"nodeType": "fmdbsample:emailContentToContactAction",
+	"priority": 2.0,
+	"sections": [
+		{
+			"name": "routing",
+			"labelKey": "fmdbsample.section.routing",
+			"rank": 1.10,
+			"fieldSets": [
+				{
+					"name": "routes",
+					"rank": 0.0,
+					"fields": [
+						{ "name": "routes" }
+					]
+				}
+			]
+		}
+	]
+}

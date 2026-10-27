@@ -70,6 +70,12 @@
 // (contacts + customRecipients) must give an address or nothing is sent: Cc and Bcc need a main recipient. An
 // address keeps one role, To before Cc before Bcc. Pick published options only, the action runs on the live
 // content. The subject is the submitted form's title; no attachment, a sample keeps to the recipients.
+//
+// `routes` holds the routing rules, one JSON entry each, authored in a section of the editor (the
+// ContactRouting selector of this module's own JS build, src/javascript): when a field of the form holds a
+// value, the contact option of the rule is added to the main recipients. A rule is a field, a value and a
+// contact, the same shape as a conditional display rule; the field is kept by its node identifier, so a
+// rename does not break it.
 [fmdbsample:emailContentToContactAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_emailContentToContactAction') autocreated i18n
  - contacts (weakreference, picker[type='content']) multiple < 'fmdbsample:contactFormOption'
@@ -79,3 +85,4 @@
  - bccContacts (weakreference, picker[type='content']) multiple < 'fmdbsample:contactFormOption'
  - bccCustomRecipients (string) indexed=no
  - from (string) indexed=no
+ - routes (string) multiple indexed=no
