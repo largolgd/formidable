@@ -63,3 +63,28 @@
 [fmdbsample:submissionIdAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_submissionIdAction') autocreated i18n
  - fieldName (string) mandatory indexed=no
+
+[fmdbsample:contactFormOptionFolder] > jnt:contentFolder, jmix:droppableContent, jmix:editorialContent, mix:title orderable
+ - jcr:title (string) i18n
+ + * (fmdbsample:contactFormOption)
+
+[fmdbsample:contactFormOption] > jnt:contentFolder, jmix:droppableContent, jmix:editorialContent, mix:title
+ - jcr:title (string) mandatory i18n indexed=no
+ - emails (string) multiple mandatory indexed=no
+
+// Sends the submitted form content by email, like fmdb:emailContentAction, but the recipients are not typed in a
+// text field: the contributor picks one or more fmdbsample:contactFormOption nodes and the addresses are those of
+// their `emails` property, plus the addresses typed in `customRecipients` (comma separated). The same two fields
+// exist for the copy (cc*) and the blind copy (bcc*). All are optional in the editor, but the main recipients
+// (contacts + customRecipients) must give an address or nothing is sent: Cc and Bcc need a main recipient. An
+// address keeps one role, To before Cc before Bcc. Pick published options only, the action runs on the live
+// content. The subject is the submitted form's title; no attachment, a sample keeps to the recipients.
+[fmdbsample:emailContentToContactAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, mix:title
+ - jcr:title (string) = resourceBundle('fmdbsample_emailContentToContactAction') autocreated i18n
+ - contacts (weakreference, picker[type='content']) multiple < 'fmdbsample:contactFormOption'
+ - customRecipients (string) indexed=no
+ - ccContacts (weakreference, picker[type='content']) multiple < 'fmdbsample:contactFormOption'
+ - ccCustomRecipients (string) indexed=no
+ - bccContacts (weakreference, picker[type='content']) multiple < 'fmdbsample:contactFormOption'
+ - bccCustomRecipients (string) indexed=no
+ - from (string) indexed=no
