@@ -404,6 +404,71 @@ class ConditionalLogicEvaluatorTest {
         return new ConditionalLogicRule("", "", sourceFieldName, "fmdb:select", valueKind, "", operator, value, values);
     }
 
+    private static ConditionalLogicRule grouped(String group, String sourceFieldName, String expected) {
+        return new ConditionalLogicRule("", "", sourceFieldName, "fmdb:select", "", "", "in", null,
+                List.of(expected), group);
+    }
+
+    /** (a = yes AND b = yes) OR c = yes */
+    private static ConditionalLogicEvaluator aAndBOrC(String a, String b, String c) {
+        return evaluator(
+                Map.of("target", List.of(
+                        grouped("1", "a", "yes"), grouped("1", "b", "yes"), grouped("2", "c", "yes"))),
+                Map.of("a", List.of(a), "b", List.of(b), "c", List.of(c))
+        );
+    }
+
+    @Test
+    void groupsAreAndedInsideAndOredBetween() {
+        // Verifies (A AND B) OR C: one group holding is enough, a group needs all of its rules.
+        assertFalse(aAndBOrC("yes", "yes", "no").isHidden("target"));
+        assertFalse(aAndBOrC("no", "no", "yes").isHidden("target"));
+        assertFalse(aAndBOrC("yes", "yes", "yes").isHidden("target"));
+        assertTrue(aAndBOrC("yes", "no", "no").isHidden("target"));
+        assertTrue(aAndBOrC("no", "no", "no").isHidden("target"));
+    }
+
+    @Test
+    void rulesWithoutAGroupStayOneAndedGroup() {
+        // Verifies the compatibility rule: rules stored before groups existed are a single AND.
+        ConditionalLogicEvaluator evaluator = evaluator(
+                Map.of("target", List.of(rule("a", "in", null, List.of("yes")), rule("b", "in", null, List.of("yes")))),
+                Map.of("a", List.of("yes"), "b", List.of("no"))
+        );
+
+        assertTrue(evaluator.isHidden("target"));
+        assertEquals(ConditionalLogicEvaluator.Visibility.HIDDEN_MEASURED, evaluator.visibility("target"));
+    }
+
+    @Test
+    void aGroupThatCannotBeEvaluatedDoesNotMaskAGroupThatHolds() {
+        // Verifies the fail-safe is per group: the broken group fails, the other one decides.
+        ConditionalLogicEvaluator evaluator = evaluator(
+                Map.of("target", List.of(grouped("1", "ghost", "yes"), grouped("2", "c", "yes"))),
+                Map.of("c", List.of("yes"))
+        );
+
+        assertFalse(evaluator.isHidden("target"));
+    }
+
+    @Test
+    void hiddenIsOnlyMeasuredWhenEveryGroupFailedByMeasure() {
+        // Verifies the provenance: a broken group might have held, so the verdict is not provable.
+        ConditionalLogicEvaluator evaluator = evaluator(
+                Map.of("target", List.of(grouped("1", "ghost", "yes"), grouped("2", "c", "yes"))),
+                Map.of("c", List.of("no"))
+        );
+
+        assertEquals(ConditionalLogicEvaluator.Visibility.HIDDEN_FAILSAFE, evaluator.visibility("target"));
+        assertEquals(ConditionalLogicEvaluator.Visibility.HIDDEN_MEASURED, aAndBOrC("yes", "no", "no").visibility("target"));
+    }
+
+    @Test
+    void aBlankGroupIsTheDefaultGroup() {
+        assertEquals(ConditionalLogicRule.DEFAULT_GROUP, grouped(" ", "a", "yes").group());
+        assertEquals(ConditionalLogicRule.DEFAULT_GROUP, grouped(null, "a", "yes").group());
+    }
+
     @Test
     void numberOperatorsCompareNumerically() {
         // Verifies the number value kind: "9" is less than "10" numerically even

@@ -29,9 +29,18 @@ public record ConditionalLogicRule(
         String providerRef,
         String operator,
         String value,
-        List<String> values
+        List<String> values,
+        /**
+         * The group the rule belongs to: rules of one group are ANDed, a field is visible
+         * when at least one of its groups is satisfied. Never blank — a rule stored without
+         * a group (every rule authored before groups existed) is in {@link #DEFAULT_GROUP}.
+         */
+        String group
 ) {
     private static final Logger log = LoggerFactory.getLogger(ConditionalLogicRule.class);
+
+    /** The group of a rule that names none: all such rules form one group, the historical AND. */
+    public static final String DEFAULT_GROUP = "1";
 
     public static final String SOURCE_TYPE_FIELD = "field";
     public static final String VALUE_KIND_NUMBER = "number";
@@ -50,10 +59,24 @@ public record ConditionalLogicRule(
      * lets the server stay independent of the set of providers.
      */
     private static final String VALUE_KEY = "value";
+    private static final String GROUP_KEY = "group";
 
     private static final java.util.Set<String> SHARED_RULE_KEYS = java.util.Set.of(
             "logicId", "sourceType", "sourceNodeId", "sourceFieldKey", "sourceFieldName",
-            "sourceFieldType", "valueKind", "operator", VALUE_KEY, "values");
+            "sourceFieldType", "valueKind", "operator", VALUE_KEY, "values", GROUP_KEY);
+
+    /** A rule of the default group, the shape every rule had before groups existed. */
+    public ConditionalLogicRule(
+            String logicId, String sourceType, String sourceFieldName, String sourceFieldType,
+            String valueKind, String providerRef, String operator, String value, List<String> values
+    ) {
+        this(logicId, sourceType, sourceFieldName, sourceFieldType, valueKind, providerRef,
+                operator, value, values, DEFAULT_GROUP);
+    }
+
+    public ConditionalLogicRule {
+        group = group == null || group.isBlank() ? DEFAULT_GROUP : group.trim();
+    }
 
     /**
      * Whether this rule designates another form field, the only source the server can
@@ -101,7 +124,8 @@ public record ConditionalLogicRule(
                 providerRef,
                 operator,
                 TODAY_SENTINEL.equals(value) ? day : value,
-                values.stream().map(v -> TODAY_SENTINEL.equals(v) ? day : v).toList()
+                values.stream().map(v -> TODAY_SENTINEL.equals(v) ? day : v).toList(),
+                group
         );
     }
 
@@ -150,7 +174,8 @@ public record ConditionalLogicRule(
                 isFieldSourceType(sourceType) ? null : extractProviderRef(obj),
                 operator,
                 obj.has(VALUE_KEY) ? obj.optString(VALUE_KEY, null) : null,
-                parseValues(obj)
+                parseValues(obj),
+                obj.optString(GROUP_KEY, DEFAULT_GROUP)
         );
     }
 
