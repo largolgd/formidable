@@ -55,6 +55,30 @@ Meaning:
   is shared across kinds: `between` compares numerically for the `number` kind and as
   strings otherwise, and only the `date` kind gives the `today` sentinel its meaning — a
   rule stored without it compares `today` as a literal string and `"9" > "10"`
+- `group` (optional string, `"1"` when absent) is the group the rule belongs to; see below
+
+## Rule groups: AND inside, OR between
+
+The rules of one group must **all** hold (AND); a field is visible as soon as **one** group
+holds (OR). `(A and B) or C` is A and B in group `1`, C in group `2`. Rules stored without a
+`group` are all in group `1`, so existing content keeps its plain AND and needs no migration;
+the editor writes `group` only for groups other than `1`.
+
+Both evaluators implement the same table (`ConditionalLogicEvaluator` on the server,
+`isVisibleByGroups` in `formidable-elements/src/utils/conditionalLogic.ts` in the browser):
+
+- a group holds when all its rules hold; a field with no rule is visible
+- a rule that cannot be evaluated fails **its group** only: another group that holds still
+  shows the field
+- server provenance: the field is `HIDDEN_MEASURED` (provable, so a submitted value is
+  refused) only when **every** group failed by measurement; if any failed group contained a
+  fail-safe failure the verdict is `HIDDEN_FAILSAFE`, since that group might have held
+- the editor lets a source field be used once per group (not once per field), so the same
+  field can serve two groups
+
+Deployment note: `group` travels in the ordinary rule JSON. A runtime or engine that predates
+it ignores the key and ANDs every rule — deploy formidable-engine and formidable-elements
+together before authoring grouped rules.
 
 ### Date rules relative to the submission day
 

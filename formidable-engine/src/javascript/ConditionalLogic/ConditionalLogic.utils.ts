@@ -68,6 +68,28 @@ const EMPTY_FIELD_RULE: ConditionalLogicRule = {
     values: []
 };
 
+/** The group a rule without one belongs to, shared by every rule stored before groups existed. */
+export const DEFAULT_GROUP = '1';
+
+/** The most groups a field offers: more than a form needs, few enough for a plain dropdown. */
+export const MAX_GROUPS = 8;
+
+export const groupOf = (rule: {group?: string}): string => rule.group || DEFAULT_GROUP;
+
+/**
+ * The group numbers the dropdown offers: every group in use, plus the next free one (how a new
+ * group is started), capped at MAX_GROUPS. The rule's own group is always listed.
+ */
+export const groupChoices = (usedGroups: string[], own: string): string[] => {
+    const numbers = [...usedGroups, own].map(Number).filter(n => Number.isInteger(n) && n >= 1);
+    const highest = Math.min(MAX_GROUPS, Math.max(1, ...numbers) + 1);
+    return Array.from({length: Math.max(highest, Number(own) || 1)}, (_, i) => String(i + 1));
+};
+
+/** Serializes the group only when it is not the default one: existing rules keep their JSON byte for byte. */
+export const storedGroup = (group?: string): string | undefined =>
+    group && group !== DEFAULT_GROUP ? group : undefined;
+
 export const parseRule = (value?: string): ConditionalLogicRule => {
     if (!value) {
         return {...EMPTY_FIELD_RULE};
@@ -94,7 +116,8 @@ export const parseRule = (value?: string): ConditionalLogicRule => {
             cookie: typeof parsed.cookie === 'string' ? parsed.cookie : undefined,
             operator: (parsed.operator as LogicOperator) ?? 'in',
             value: typeof parsed.value === 'string' ? parsed.value : undefined,
-            values: Array.isArray(parsed.values) ? parsed.values.filter(value => typeof value === 'string') : []
+            values: Array.isArray(parsed.values) ? parsed.values.filter(value => typeof value === 'string') : [],
+            group: typeof parsed.group === 'string' && parsed.group !== '' ? parsed.group : undefined
         };
     } catch {
         return {...EMPTY_FIELD_RULE};
@@ -134,7 +157,8 @@ export const normalizeStoredProviderRule = (rule: ConditionalLogicRule): Conditi
         logicId: rule.logicId,
         sourceType: provider.id,
         [provider.configKey]: (rule[provider.configKey] ?? '').trim(),
-        operator
+        operator,
+        group: storedGroup(rule.group)
     };
 
     if (operatorNeedsValue(operator)) {
@@ -159,7 +183,7 @@ export const normalizeStoredRule = (
 ): ConditionalLogicRule => {
     const descriptor = getSourceDescriptor(source?.type, source?.valueKind);
     if (!source || !descriptor) {
-        return parseRule(undefined);
+        return {...parseRule(undefined), group: storedGroup(rule.group)};
     }
 
     const operator = sanitizeOperator(source, rule.operator);
@@ -172,7 +196,8 @@ export const normalizeStoredRule = (
         sourceFieldName: source.name,
         sourceFieldType: source.type,
         valueKind: descriptor.valueKind,
-        operator
+        operator,
+        group: storedGroup(rule.group)
     };
 
     if (!operatorNeedsValue(operator)) {
