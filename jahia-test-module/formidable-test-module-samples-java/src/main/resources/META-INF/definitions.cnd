@@ -54,3 +54,21 @@
 // against ZeroBounceStubServlet.
 [fmdbsample:zeroBounceEmailAction] > jnt:content, fmdbmix:fieldAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_zeroBounceEmailAction') autocreated i18n
+
+[fmdbsample:contactFormOptionFolder] > jnt:contentFolder, jmix:droppableContent, jmix:editorialContent, mix:title orderable
+ - jcr:title (string) i18n
+ + * (fmdbsample:contactFormOption)
+
+[fmdbsample:contactFormOption] > jnt:contentFolder, jmix:droppableContent, jmix:editorialContent, mix:title
+ - jcr:title (string) mandatory i18n indexed=no
+ - emails (string) multiple mandatory indexed=no
+// Sends the submitted form content by email, like fmdb:emailContentAction, but the recipients are not typed in a
+// text field: the contributor picks one or more fmdbsample:contactFormOption nodes and the addresses are those of
+// their `emails` property, plus the addresses typed in `customRecipients` (comma separated). The
+// two are optional in the editor, one of them must give an address or nothing is sent. Pick published options only, the action runs on the live content. The subject is the
+// submitted form's title; no attachment, a sample keeps to the recipients.
+[fmdbsample:emailContentToContactAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, mix:title
+ - jcr:title (string) = resourceBundle('fmdbsample_emailContentToContactAction') autocreated i18n
+ - contacts (weakreference, picker[type='content']) multiple < 'fmdbsample:contactFormOption'
+ - customRecipients (string) indexed=no
+ - from (string) indexed=no
