@@ -9,7 +9,8 @@
 		"formidable-engine",
 		"formidable-extended-inputs",
 		"jahia-test-module/formidable-test-module-templateset-tsx",
-		"jahia-test-module/formidable-test-module-samples-tsx"
+		"jahia-test-module/formidable-test-module-samples-tsx",
+		"jahia-test-module/formidable-test-module-samples-java"
 	],
 	"scripts": {
 		"format": "prettier --write --list-different $INIT_CWD",

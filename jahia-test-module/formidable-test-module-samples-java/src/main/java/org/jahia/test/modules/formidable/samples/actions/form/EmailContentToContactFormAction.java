@@ -8,6 +8,8 @@ import org.jahia.services.content.JCRSessionWrapper;
 import org.jahia.services.content.JCRValueWrapper;
 import org.jahia.services.mail.MailMessage;
 import org.jahia.services.mail.MailService;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -19,9 +21,12 @@ import javax.jcr.RepositoryException;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -82,7 +87,9 @@ public class EmailContentToContactFormAction implements FormAction {
             throw FormActionException.serverError("MailService is unavailable or disabled. Check Jahia SMTP configuration.");
         }
 
-        List<String> to = recipients(actionNode, "contacts", "customRecipients");
+        List<String> to = validAddresses(concat(
+                recipients(actionNode, "contacts", "customRecipients"),
+                routedRecipients(actionNode, session, parameters)));
         List<String> cc = recipients(actionNode, "ccContacts", "ccCustomRecipients");
         List<String> bcc = recipients(actionNode, "bccContacts", "bccCustomRecipients");
         if (to.isEmpty()) {
@@ -150,6 +157,114 @@ public class EmailContentToContactFormAction implements FormAction {
         }
         raw.addAll(splitList(stringProperty(actionNode, customProperty)));
         return validAddresses(raw);
+    }
+
+    /**
+     * One routing rule of the action's {@code routes} property: when the field holds the value, the contact
+     * option is added to the main recipients. The field is named by its node identifier, which survives a
+     * rename, and by its node name, the fallback when that node cannot be read.
+     */
+    record Route(String sourceNodeId, String fieldName, String value, String contactId) {
+    }
+
+    /** The routes stored as JSON, one entry per rule; an entry that is broken or incomplete routes nothing. */
+    static List<Route> parseRoutes(List<String> raw) {
+        List<Route> routes = new ArrayList<>();
+        for (String entry : raw) {
+            if (entry == null || entry.isBlank()) {
+                continue;
+            }
+            try {
+                JSONObject json = new JSONObject(entry);
+                Route route = new Route(
+                        json.optString("sourceNodeId", "").trim(),
+                        json.optString("fieldName", "").trim(),
+                        json.optString("value", ""),
+                        json.optString("contactId", "").trim());
+                boolean namesAField = !route.sourceNodeId().isEmpty() || !route.fieldName().isEmpty();
+                if (namesAField && !route.value().isEmpty() && !route.contactId().isEmpty()) {
+                    routes.add(route);
+                }
+            } catch (JSONException e) {
+                log.warn("[Formidable sample] a routing rule is not valid JSON and is left out: {}", e.getMessage());
+            }
+        }
+        return routes;
+    }
+
+    /**
+     * The contact options the submission routes to, each once, in the order of the rules: those whose field
+     * holds the rule's value. A field with several values (check boxes) matches when one of them is the value;
+     * a field the submission does not carry (hidden by a rule, left out) matches nothing.
+     *
+     * @param fieldNameOf the name a rule's field is submitted under
+     */
+    static List<String> matchedContactIds(List<Route> routes, Function<Route, String> fieldNameOf, Map<String, List<String>> parameters) {
+        Set<String> contactIds = new LinkedHashSet<>();
+        for (Route route : routes) {
+            List<String> submitted = parameters.get(fieldNameOf.apply(route));
+            if (submitted != null && submitted.contains(route.value())) {
+                contactIds.add(route.contactId());
+            }
+        }
+        return new ArrayList<>(contactIds);
+    }
+
+    /**
+     * The addresses of the contacts the routing rules of the action select for this submission. A contact that
+     * cannot be read in the live workspace — deleted, or not published — is logged and left out.
+     */
+    private static List<String> routedRecipients(JCRNodeWrapper actionNode, JCRSessionWrapper session, Map<String, List<String>> parameters)
+            throws FormActionException {
+        List<String> rawRoutes = new ArrayList<>();
+        try {
+            if (actionNode.hasProperty("routes")) {
+                for (JCRValueWrapper value : actionNode.getProperty("routes").getValues()) {
+                    rawRoutes.add(value.getString());
+                }
+            }
+        } catch (RepositoryException e) {
+            throw FormActionException.serverError("Could not read the routing rules of '" + actionNode.getPath() + "'", e);
+        }
+
+        List<Route> routes = parseRoutes(rawRoutes);
+        if (routes.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> raw = new ArrayList<>();
+        for (String contactId : matchedContactIds(routes, route -> fieldNameOf(route, session), parameters)) {
+            try {
+                JCRNodeWrapper contact = session.getNodeByIdentifier(contactId);
+                if (contact.hasProperty("emails")) {
+                    for (JCRValueWrapper email : contact.getProperty("emails").getValues()) {
+                        raw.add(email.getString());
+                    }
+                }
+            } catch (RepositoryException e) {
+                log.warn("[Formidable sample] '{}': a routed contact cannot be read in the live workspace, is it published? {}",
+                        actionNode.getPath(), e.getMessage());
+            }
+        }
+        return raw;
+    }
+
+    /** The name the rule's field is submitted under: its node's current name, else the one the rule stored. */
+    private static String fieldNameOf(Route route, JCRSessionWrapper session) {
+        if (!route.sourceNodeId().isEmpty()) {
+            try {
+                return session.getNodeByIdentifier(route.sourceNodeId()).getName();
+            } catch (RepositoryException e) {
+                log.debug("The field of a routing rule cannot be read, its stored name is used: {}", e.getMessage());
+            }
+        }
+        return route.fieldName();
+    }
+
+    private static List<String> concat(List<String> first, List<String> second) {
+        List<String> all = new ArrayList<>(first);
+        all.addAll(second);
+        return all;
     }
 
     /** The addresses of {@code list} that are not in {@code already}, compared without regard to case. */
