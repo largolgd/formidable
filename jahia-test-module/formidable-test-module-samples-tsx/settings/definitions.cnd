@@ -1,6 +1,8 @@
 <jnt = 'http://www.jahia.org/jahia/nt/1.0'>
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
 <fmdb = 'http://www.jahia.org/jahia/fmdb/nt/1.0'>
+<fmdbmix = 'http://www.jahia.org/jahia/fmdb/mix/1.0'>
+<fmdbsampletsx = 'http://www.jahia.org/jahia/fmdbsampletsx/nt/1.0'>
 <fmdbsamplemix = 'http://www.jahia.org/jahia/fmdb/sample/mix/1.0'>
 
 // Adds contributor-defined CSS class names to a content type.
@@ -25,3 +27,12 @@
  extends = fmdb:inputText, fmdb:inputEmail, fmdb:textarea, fmdb:inputNumber, fmdb:inputRange, fmdb:inputDate, fmdb:inputDatetimeLocal, fmdb:inputColor, fmdb:inputFile, fmdb:checkbox, fmdb:radio, fmdb:select
  itemtype = content
  - helpTextPosition (string, choicelist[resourceBundle]) = 'up' autocreated indexed=no < 'up', 'down', 'both'
+
+// A hidden field whose value comes from a GET parameter of the page URL, whose name the contributor
+// gives. A new leaf field type of a third-party module: fmdbmix:element makes it a form element,
+// fmdbmix:submittableField offers the field-actions switch, fmdbmix:profileMappableField the jExperience
+// profile mapping, fmdbmix:textField says what it submits. The view is
+// src/components/Input/QueryParam/default.server.tsx.
+[fmdbsampletsx:inputQueryParam] > jnt:content, fmdbmix:element, fmdbmix:submittableField, fmdbmix:profileMappableField, fmdbmix:textField
+ - queryParameter (string) mandatory indexed=no < '^[A-Za-z0-9_.-]+$'
+ - defaultValue (string) indexed=no
