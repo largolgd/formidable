@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Gives every newly created form its submission identifier: a hidden field named {@code <form>-formId} in
+ * Gives every newly created form its submission identifier: a hidden field named {@code formId} in
  * the form's fields, and a {@code fmdbsample:submissionIdAction} that fills it, placed first in the actions.
  *
  * <p>A form that already carries such an action (a copy, an import) is left as it is: the field and the
@@ -30,7 +30,7 @@ public class SubmissionIdFieldListener extends DefaultEventListener {
 
     private static final Logger log = LoggerFactory.getLogger(SubmissionIdFieldListener.class);
 
-    static final String FIELD_SUFFIX = "-formId";
+    static final String FIELD_NAME = "formId";
     private static final String FIELDS = "fields";
     private static final String ACTION_TYPE = "fmdbsample:submissionIdAction";
     private static final String FIELD_TYPE = "fmdb:inputHidden";
@@ -90,7 +90,7 @@ public class SubmissionIdFieldListener extends DefaultEventListener {
             return false;
         }
 
-        String fieldName = form.getName() + FIELD_SUFFIX;
+        String fieldName = FIELD_NAME;
         JCRNodeWrapper fields = form.getNode(FIELDS);
         if (!fields.hasNode(fieldName)) {
             JCRNodeWrapper field = fields.addNode(fieldName, FIELD_TYPE);

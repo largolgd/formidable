@@ -44,14 +44,14 @@ class SubmissionIdFieldListenerTest {
         when(form.hasNode("actions")).thenReturn(true);
         when(form.getNode("fields")).thenReturn(fields);
         when(form.getNode("actions")).thenReturn(actions);
-        when(fields.addNode("contact-formId", "fmdb:inputHidden")).thenReturn(field);
-        when(actions.addNode("contact-formId-action", "fmdbsample:submissionIdAction")).thenReturn(action);
-        when(action.getName()).thenReturn("contact-formId-action");
+        when(fields.addNode("formId", "fmdb:inputHidden")).thenReturn(field);
+        when(actions.addNode("formId-action", "fmdbsample:submissionIdAction")).thenReturn(action);
+        when(action.getName()).thenReturn("formId-action");
         when(actions.getNodes()).thenReturn(actionChildren);
     }
 
     @Test
-    void addsTheFieldNamedAfterTheFormAndTheActionFirst() throws RepositoryException {
+    void addsTheFormIdFieldAndTheActionFirst() throws RepositoryException {
         JCRNodeWrapper existing = mock(JCRNodeWrapper.class);
         when(existing.getName()).thenReturn("save");
         // first call: the check for an existing action (empty); second: the ordering (one older action)
@@ -63,9 +63,9 @@ class SubmissionIdFieldListenerTest {
 
         assertTrue(SubmissionIdFieldListener.addTo(session, "/sites/s/contact"));
 
-        verify(fields).addNode("contact-formId", "fmdb:inputHidden");
-        verify(action).setProperty("fieldName", "contact-formId");
-        verify(actions).orderBefore("contact-formId-action", "save");
+        verify(fields).addNode("formId", "fmdb:inputHidden");
+        verify(action).setProperty("fieldName", "formId");
+        verify(actions).orderBefore("formId-action", "save");
     }
 
     @Test
