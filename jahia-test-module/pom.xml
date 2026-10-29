@@ -44,6 +44,7 @@
         <module>formidable-test-module-templateset-tsx</module>
         <module>formidable-test-module-samples-tsx</module>
         <module>formidable-test-module-samples-java</module>
+        <module>formidable-nnm-sync</module>
     </modules>
 
     <properties>

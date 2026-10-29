@@ -1,0 +1,12 @@
+<jnt = 'http://www.jahia.org/jahia/nt/1.0'>
+<fmdbmix = 'http://www.jahia.org/jahia/fmdb/mix/1.0'>
+<fmdbnnm = 'http://www.jahia.org/jahia/fmdbnnm/nt/1.0'>
+
+// The action an author adds to a form to connect it to the third-party system. It does two things:
+// its presence tells the module to send the form's configuration at each publication, and, as a form
+// action, it sends each submission. It has no setting of its own: the URLs are the operator's, in
+// org.jahia.test.modules.formidable.nnmsync.cfg, never in the content.
+// It writes nothing to the repository when a submission arrives (the request goes out from a thread of
+// the module), hence readOnlyCompatibleAction: the form is not blocked during a read-only maintenance.
+[fmdbnnm:syncAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, mix:title
+ - jcr:title (string) = resourceBundle('fmdbnnm_syncAction') autocreated i18n
