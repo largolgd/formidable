@@ -28,11 +28,11 @@
  itemtype = content
  - helpTextPosition (string, choicelist[resourceBundle]) = 'up' autocreated indexed=no < 'up', 'down', 'both'
 
-// A hidden field whose value comes from a GET parameter of the page URL, whose name the contributor
-// gives. A new leaf field type of a third-party module: fmdbmix:element makes it a form element,
+// A hidden field whose value comes from a request parameter of the page — a GET parameter of the URL or
+// a field of a POST to the page — whose name the contributor gives. A new leaf field type of a third-party module: fmdbmix:element makes it a form element,
 // fmdbmix:submittableField offers the field-actions switch, fmdbmix:profileMappableField the jExperience
 // profile mapping, fmdbmix:textField says what it submits. The view is
-// src/components/Input/QueryParam/default.server.tsx.
-[fmdbsampletsx:inputQueryParam] > jnt:content, fmdbmix:element, fmdbmix:submittableField, fmdbmix:profileMappableField, fmdbmix:textField
- - queryParameter (string) mandatory indexed=no < '^[A-Za-z0-9_.-]+$'
+// src/components/Input/RequestParam/default.server.tsx.
+[fmdbsampletsx:inputRequestParam] > jnt:content, fmdbmix:element, fmdbmix:submittableField, fmdbmix:profileMappableField, fmdbmix:textField
+ - requestParameter (string) mandatory indexed=no < '^[A-Za-z0-9_.-]+$'
  - defaultValue (string) indexed=no
