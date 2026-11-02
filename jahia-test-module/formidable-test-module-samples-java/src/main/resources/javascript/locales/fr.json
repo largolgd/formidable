@@ -1,0 +1,11 @@
+{
+	"contactRouting": {
+		"selectField": "Choisir un champ",
+		"selectValue": "Choisir une valeur",
+		"value": "Valeur",
+		"selectContact": "Ajouter le contact",
+		"noFields": "Le formulaire n'a pas encore de champ qui envoie une valeur.",
+		"noContacts": "Aucune option de contact n'existe encore sur ce site.",
+		"loadError": "Impossible de charger le formulaire et les options de contact."
+	}
+}

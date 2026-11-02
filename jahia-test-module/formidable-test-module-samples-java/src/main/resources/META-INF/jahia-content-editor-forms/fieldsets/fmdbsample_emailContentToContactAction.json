@@ -1,0 +1,9 @@
+{
+	"name": "fmdbsample:emailContentToContactAction",
+	"fields": [
+		{
+			"name": "routes",
+			"selectorType": "ContactRouting"
+		}
+	]
+}
