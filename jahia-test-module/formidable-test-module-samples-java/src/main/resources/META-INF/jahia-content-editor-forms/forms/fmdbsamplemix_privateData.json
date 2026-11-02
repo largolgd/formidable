@@ -1,0 +1,18 @@
+{
+	"nodeType": "fmdbsamplemix:privateData",
+	"priority": 2.0,
+	"sections": [
+		{
+			"name": "fieldSettings",
+			"labelKey": "fmdb.section.fieldSettings",
+			"rank": 1.05,
+			"fieldSets": [
+				{
+					"name": "fmdbsamplemix:privateData",
+					"rank": 5.5,
+					"alwaysPresent": true
+				}
+			]
+		}
+	]
+}

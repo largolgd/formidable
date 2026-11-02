@@ -54,3 +54,18 @@
 // against ZeroBounceStubServlet.
 [fmdbsample:zeroBounceEmailAction] > jnt:content, fmdbmix:fieldAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_zeroBounceEmailAction') autocreated i18n
+
+// "Save to JCR, without the private fields": the engine's Save to JCR, minus the fields the author marked
+// private. A form action of this module (SavePublicToJcrFormAction), which hands the engine's own storage service
+// the values it may keep. Used instead of the standard fmdb:save2jcrAction, not next to it.
+[fmdbsample:savePublicToJcrAction] > jnt:content, fmdbmix:formAction, mix:title
+ - jcr:title (string) = resourceBundle('fmdbsample_savePublicToJcrAction') autocreated i18n
+
+// The author's "private field" switch, closing the Field settings section of a field's editor (placed there by
+// META-INF/jahia-content-editor-forms/forms/fmdbsamplemix_privateData.json, "alwaysPresent": a switch without a
+// property of its own is dropped once moved otherwise). `extends = fmdbmix:submittableField` offers it on every
+// field with a value, third-party included, and on nothing else: not on a file field, which is stored as usual.
+// A pure marker: its presence is the flag, SavePublicToJcrFormAction reads it. Nothing of the engine reads it, so
+// the standard Save to JCR still stores the field.
+[fmdbsamplemix:privateData] mixin
+ extends = fmdbmix:submittableField
