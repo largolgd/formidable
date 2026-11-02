@@ -53,7 +53,36 @@ export interface ConditionalLogicRule {
 	operator: ConditionalLogicOperator;
 	value?: string;
 	values?: string[];
+	// Rules of one group are ANDed, a field is visible when one of its groups holds. Absent
+	// on every rule stored before groups existed: they all fall in DEFAULT_RULE_GROUP.
+	group?: string;
 }
+
+/** The group of a rule that names none: all such rules form one group, the historical AND. */
+export const DEFAULT_RULE_GROUP = '1';
+
+/** The group a rule belongs to; blank or absent means the default group, as on the server. */
+export const ruleGroupOf = (rule: Pick<ConditionalLogicRule, 'group'>): string =>
+	typeof rule.group === 'string' && rule.group.trim() !== '' ? rule.group.trim() : DEFAULT_RULE_GROUP;
+
+/**
+ * Whether a field is visible given the verdict of each of its rules: the rules of a group are
+ * ANDed, the groups ORed. Mirrors ConditionalLogicEvaluator on the server — both must reach
+ * the same verdict, or a field the browser showed is refused (or accepted) by the server.
+ */
+export const isVisibleByGroups = (
+	rules: ConditionalLogicRule[],
+	satisfied: (rule: ConditionalLogicRule) => boolean
+): boolean => {
+	if (rules.length === 0) return true;
+	const groups = new Map<string, ConditionalLogicRule[]>();
+	for (const rule of rules) {
+		const key = ruleGroupOf(rule);
+		groups.set(key, [...(groups.get(key) ?? []), rule]);
+	}
+
+	return Array.from(groups.values()).some(group => group.every(satisfied));
+};
 
 const VALUE_KINDS: ConditionalLogicValueKind[] = ['choice', 'date', 'number', 'boolean', 'text'];
 
@@ -176,7 +205,8 @@ export const parseConditionalLogicRule = (rawValue: string): ConditionalLogicRul
 				logicId: typeof parsed.logicId === 'string' ? parsed.logicId : undefined,
 				sourceType: parsed.sourceType,
 				operator: parsed.operator as ConditionalLogicOperator,
-				value: typeof parsed.value === 'string' ? parsed.value : undefined
+				value: typeof parsed.value === 'string' ? parsed.value : undefined,
+				group: typeof parsed.group === 'string' ? parsed.group : undefined
 			};
 		}
 
@@ -192,7 +222,8 @@ export const parseConditionalLogicRule = (rawValue: string): ConditionalLogicRul
 			valueKind: VALUE_KINDS.includes(parsed.valueKind as ConditionalLogicValueKind) ? parsed.valueKind : undefined,
 			operator: parsed.operator as ConditionalLogicOperator,
 			value: typeof parsed.value === 'string' ? parsed.value : undefined,
-			values: Array.isArray(parsed.values) ? parsed.values.filter(value => typeof value === 'string') : undefined
+			values: Array.isArray(parsed.values) ? parsed.values.filter(value => typeof value === 'string') : undefined,
+			group: typeof parsed.group === 'string' ? parsed.group : undefined
 		};
 	} catch {
 		return null;
@@ -674,7 +705,7 @@ export const applyConditionalLogicVisibility = (form: HTMLFormElement) => {
 			delete wrapper.dataset.fmdbLogicUnresolved;
 		}
 
-		const visible = rules.every(rule => {
+		const visible = isVisibleByGroups(rules, rule => {
 			if (isNonFieldRule(rule)) {
 				const provider = getLogicProvider(rule.sourceType);
 				// Unknown provider or missing reference: unevaluable (reported above), so

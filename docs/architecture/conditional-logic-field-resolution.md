@@ -43,7 +43,7 @@ Example:
 }
 ```
 
-A field is shown when **all** its rules are satisfied. The keys of a rule, and what each side does
+A field is shown when **all** the rules of one group are satisfied (see [Rule groups](#rule-groups-and-inside-or-between)). The keys of a rule, and what each side does
 when one is missing:
 
 ### The fields of a rule
@@ -61,6 +61,7 @@ when one is missing:
 | `operator` | string | the editor | every rule, **required** | The comparison, one of the table below. Absent → the rule is skipped by both evaluators; unknown → fails closed (`data-fmdb-logic-unresolved`, one console warning). |
 | `value` | string | the editor | the single-valued operators | The expected value. `today` on a `date` kind means the submission day. |
 | `values` | array of strings | the editor | the list operators, and `between` | The expected values of a list comparison, or the two bounds `[from, to]` of `between`. |
+| `group` | string | the editor, only for groups other than `1` | every rule, optional | The group the rule belongs to; absent → group `1` ([Rule groups](#rule-groups-and-inside-or-between)). |
 
 A field rule carries no `sourceType`, a provider rule none of the `source*` keys nor `valueKind`.
 The save-time sync keeps every key it does not know; the editor rewrites a rule from the keys above
@@ -86,6 +87,29 @@ The server evaluates field rules only: a provider rule is evaluated from the sta
 declares with the submission (next sections). `ConditionalLogicRule` (Java) and
 `conditionalLogic.ts` (browser) are the two readers of this format, `ConditionalLogic.utils.ts`
 its writer.
+
+## Rule groups: AND inside, OR between
+
+The rules of one group must **all** hold (AND); a field is visible as soon as **one** group
+holds (OR). `(A and B) or C` is A and B in group `1`, C in group `2`. Rules stored without a
+`group` are all in group `1`, so existing content keeps its plain AND and needs no migration;
+the editor writes `group` only for groups other than `1`.
+
+Both evaluators implement the same table (`ConditionalLogicEvaluator` on the server,
+`isVisibleByGroups` in `formidable-elements/src/utils/conditionalLogic.ts` in the browser):
+
+- a group holds when all its rules hold; a field with no rule is visible
+- a rule that cannot be evaluated fails **its group** only: another group that holds still
+  shows the field
+- server provenance: the field is `HIDDEN_MEASURED` (provable, so a submitted value is
+  refused) only when **every** group failed by measurement; if any failed group contained a
+  fail-safe failure the verdict is `HIDDEN_FAILSAFE`, since that group might have held
+- the editor lets a source field be used once per group (not once per field), so the same
+  field can serve two groups
+
+Deployment note: `group` travels in the ordinary rule JSON. A runtime or engine that predates
+it ignores the key and ANDs every rule — deploy formidable-engine and formidable-elements
+together before authoring grouped rules.
 
 ### Date rules relative to the submission day
 

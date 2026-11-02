@@ -18,7 +18,7 @@
  */
 .fmdbRuleGrid {
     display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 2fr);
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 0.9fr) minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 2fr);
     gap: 0.75rem;
     align-items: center;
 }
@@ -29,7 +29,7 @@
 
 /* Status text (no sources, unknown type…) replaces every cell after the type. */
 .fmdbRuleSpan {
-    grid-column: 2 / -1;
+    grid-column: 3 / -1;
 }
 
 /*

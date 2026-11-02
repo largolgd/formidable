@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +16,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Evaluates conditional logic rules server-side to determine field visibility.
- * A field is visible when ALL its rules are satisfied (AND logic).
+ * A field is visible when ALL the rules of at least one group are satisfied: AND inside a group,
+ * OR between groups. Rules that name no group form a single group (plain AND).
  * Handles transitive visibility (hidden source → rule fails) and parent container inheritance.
  */
 public class ConditionalLogicEvaluator {
@@ -178,23 +180,48 @@ public class ConditionalLogicEvaluator {
             List<ConditionalLogicRule> rules = fieldLogicRules.get(fieldName);
             if (rules == null || rules.isEmpty()) return Visibility.VISIBLE;
 
-            // Rules are ANDed: any failing rule hides the field. One measured failure is
-            // enough to prove the verdict, however many other rules fell back to the
-            // fail-safe — the field was hidden for that measurable reason alone.
-            boolean anyFailsafeFailure = false;
+            // Rules of one group are ANDed, groups are ORed: the field is visible as soon as
+            // one group holds. Hidden is only provable when every group failed for a
+            // measured reason — a group that fell back to the fail-safe might have held.
+            // Rules without a group are all in the default group: a single AND, as before.
+            Map<String, List<ConditionalLogicRule>> groups = new LinkedHashMap<>();
             for (ConditionalLogicRule rule : rules) {
-                switch (evaluateRule(rule, visiting)) {
-                    case FAILED_MEASURED -> {
-                        return Visibility.HIDDEN_MEASURED;
+                groups.computeIfAbsent(rule.group(), g -> new ArrayList<>()).add(rule);
+            }
+
+            boolean everyGroupMeasured = true;
+            for (List<ConditionalLogicRule> group : groups.values()) {
+                switch (evaluateGroup(group, visiting)) {
+                    case SATISFIED -> {
+                        return Visibility.VISIBLE;
                     }
-                    case FAILED_FAILSAFE -> anyFailsafeFailure = true;
-                    case SATISFIED -> { /* keep looking */ }
+                    case FAILED_FAILSAFE -> everyGroupMeasured = false;
+                    case FAILED_MEASURED -> { /* keep looking for a group that holds */ }
                 }
             }
-            return anyFailsafeFailure ? Visibility.HIDDEN_FAILSAFE : Visibility.VISIBLE;
+            return everyGroupMeasured ? Visibility.HIDDEN_MEASURED : Visibility.HIDDEN_FAILSAFE;
         } finally {
             visiting.remove(fieldName);
         }
+    }
+
+    /**
+     * The rules of one group are ANDed: any failing rule fails the group. One measured
+     * failure is enough to prove the verdict, however many other rules fell back to the
+     * fail-safe — the group failed for that measurable reason alone.
+     */
+    private RuleResult evaluateGroup(List<ConditionalLogicRule> group, Set<String> visiting) {
+        boolean anyFailsafeFailure = false;
+        for (ConditionalLogicRule rule : group) {
+            switch (evaluateRule(rule, visiting)) {
+                case FAILED_MEASURED -> {
+                    return RuleResult.FAILED_MEASURED;
+                }
+                case FAILED_FAILSAFE -> anyFailsafeFailure = true;
+                case SATISFIED -> { /* keep looking */ }
+            }
+        }
+        return anyFailsafeFailure ? RuleResult.FAILED_FAILSAFE : RuleResult.SATISFIED;
     }
 
     private RuleResult evaluateRule(ConditionalLogicRule rule, Set<String> visiting) {
