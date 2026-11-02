@@ -2,5 +2,7 @@
  orderable
  - label (string) i18n indexed=no
  - intro (string, richtext) i18n indexed=no
+ - showPreviousBtn (boolean) = true autocreated indexed=no
+ - showNextBtn (boolean) = true autocreated indexed=no
  + * (fmdbmix:formElement) = fmdbmix:formElement
  + * (fmdbmix:formContent) = fmdbmix:formContent

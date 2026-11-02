@@ -1,0 +1,1 @@
+._grid_1usgs_1{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem 1.25rem;align-items:start}._item_1usgs_15{min-width:0}@media(max-width:720px){._grid_1usgs_1{grid-template-columns:minmax(0,1fr)}}

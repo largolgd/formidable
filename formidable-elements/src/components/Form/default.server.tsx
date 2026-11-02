@@ -16,6 +16,7 @@ import ShieldCheckIcon from "~/design/ShieldCheckIcon";
 import Form from "./Form.client";
 import {type FormServerProps} from "./types";
 import {resolveUrlPlaceholders, styleTagCss} from "~/utils/richTextUtils";
+import {stepButtonsOf} from "~/utils/stepButtons";
 
 const SETTINGS_BEAN_SERVICE = "org.jahia.api.settings.SettingsBean";
 const CAPTCHA_CONFIG_SERVICE = "org.jahia.modules.formidable.engine.config.captcha.CaptchaConfigService";
@@ -144,6 +145,12 @@ jahiaComponent(
 		const stepIds = stepNodes.length > 0
 			? stepNodes.map((s) => s.getIdentifier())
 			: undefined;
+		// Which navigation buttons each step offers, in the order of stepIds
+		const stepButtons = stepNodes.length > 0
+			? stepNodes.map((s) => stepButtonsOf(
+				getNodeProps<{showPreviousBtn?: boolean; showNextBtn?: boolean}>(s, ['showPreviousBtn', 'showNextBtn'])
+			))
+			: undefined;
 
 		const isEditMode = renderContext.isEditMode();
 		const {scriptUrl, config: captchaConfig} = readCaptchaConfig(renderContext);
@@ -235,6 +242,7 @@ jahiaComponent(
 				locale: currentNode.getLanguage(),
 				stepLabels,
 				stepIds,
+				stepButtons,
 				captcha,
 			}}
 			>

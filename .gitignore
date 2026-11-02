@@ -10,6 +10,8 @@ target/
 
 # Javascript
 dist
+# the built tsx samples module is versioned (its dist is what gets deployed)
+!jahia-test-module/formidable-test-module-samples-tsx/dist
 node/
 node_modules
 

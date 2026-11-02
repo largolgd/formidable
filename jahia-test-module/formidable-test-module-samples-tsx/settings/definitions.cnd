@@ -3,6 +3,8 @@
 <fmdb = 'http://www.jahia.org/jahia/fmdb/nt/1.0'>
 <fmdbmix = 'http://www.jahia.org/jahia/fmdb/mix/1.0'>
 <fmdbsample = 'http://www.jahia.org/jahia/fmdbsample/nt/1.0'>
+
+<fmdbsampletsx = 'http://www.jahia.org/jahia/fmdbsampletsx/nt/1.0'>
 <fmdbsamplemix = 'http://www.jahia.org/jahia/fmdb/sample/mix/1.0'>
 
 // Adds contributor-defined CSS class names to a content type.
@@ -36,3 +38,12 @@
 // a value a jCustomer profile can hold.
 [fmdbsample:quickConfirm] > jnt:content, fmdbmix:element, fmdbmix:submittableField, fmdbmix:profileMappableField, fmdbmix:booleanField
  - required (boolean) = false
+
+// A hidden field whose value comes from a request parameter of the page — a GET parameter of the URL or
+// a field of a POST to the page — whose name the contributor gives. A new leaf field type of a third-party module: fmdbmix:element makes it a form element,
+// fmdbmix:submittableField offers the field-actions switch, fmdbmix:profileMappableField the jExperience
+// profile mapping, fmdbmix:textField says what it submits. The view is
+// src/components/Input/RequestParam/default.server.tsx.
+[fmdbsampletsx:inputRequestParam] > jnt:content, fmdbmix:element, fmdbmix:submittableField, fmdbmix:profileMappableField, fmdbmix:textField
+ - requestParameter (string) mandatory indexed=no < '^[A-Za-z0-9_.-]+$'
+ - defaultValue (string) indexed=no

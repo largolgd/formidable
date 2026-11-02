@@ -29,6 +29,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- JCRNodeWrapper (mocked by the listener test) refers to commons-lang 2 -->
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.jahia.modules</groupId>
             <artifactId>formidable-engine</artifactId>
@@ -193,6 +200,7 @@
                     <failOnWarning>true</failOnWarning>
                     <ignoredUnusedDeclaredDependencies>
                         <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter-engine</ignoredUnusedDeclaredDependency>
+                        <ignoredUnusedDeclaredDependency>commons-lang:commons-lang</ignoredUnusedDeclaredDependency>
                         <ignoredUnusedDeclaredDependency>javax.jcr:jcr</ignoredUnusedDeclaredDependency>
                         <ignoredUnusedDeclaredDependency>org.osgi:osgi.annotation</ignoredUnusedDeclaredDependency>
                         <ignoredUnusedDeclaredDependency>org.springframework:spring-webmvc</ignoredUnusedDeclaredDependency>
