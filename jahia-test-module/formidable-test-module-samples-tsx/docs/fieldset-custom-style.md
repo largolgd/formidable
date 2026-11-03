@@ -19,9 +19,7 @@ element, next to Formidable's `fmdb-fieldset` hook, for the site's stylesheet to
   can do; the mixin is offered on every fieldset, behind a switch.
 - [`settings/jahia-content-editor-forms/forms/fmdbsamplemix_customStyle.json`](../settings/jahia-content-editor-forms/forms/fmdbsamplemix_customStyle.json)
   gives the mixin its own **Style** section in the editor (its label comes from the module's
-  [resource bundles](../settings/resources/), like the property's label and tooltip). Compare
-  with the [help text position](help-text-position.md), where the setting is instead placed
-  inside the built-in type's own fieldset and kept always on.
+  [resource bundles](../settings/resources/), like the property's label and tooltip).
 - [`src/components/Fieldset/customStyle.server.tsx`](../src/components/Fieldset/customStyle.server.tsx)
   registers the `customStyle` view on `fmdb:fieldset`. Like the
   [two-column fieldset](fieldset-two-columns.md), it owns the wrapper markup only and renders
