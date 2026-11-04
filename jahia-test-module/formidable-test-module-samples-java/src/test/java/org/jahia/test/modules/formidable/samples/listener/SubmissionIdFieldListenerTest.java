@@ -44,9 +44,9 @@ class SubmissionIdFieldListenerTest {
         when(form.hasNode("actions")).thenReturn(true);
         when(form.getNode("fields")).thenReturn(fields);
         when(form.getNode("actions")).thenReturn(actions);
-        when(fields.addNode("formId", "fmdb:inputHidden")).thenReturn(field);
-        when(actions.addNode("formId-action", "fmdbsample:submissionIdAction")).thenReturn(action);
-        when(action.getName()).thenReturn("formId-action");
+        when(fields.addNode("submissionId", "fmdb:inputHidden")).thenReturn(field);
+        when(actions.addNode("submissionId-action", "fmdbsample:submissionIdAction")).thenReturn(action);
+        when(action.getName()).thenReturn("submissionId-action");
         when(actions.getNodes()).thenReturn(actionChildren);
     }
 
@@ -63,9 +63,9 @@ class SubmissionIdFieldListenerTest {
 
         assertTrue(SubmissionIdFieldListener.addTo(session, "/sites/s/contact"));
 
-        verify(fields).addNode("formId", "fmdb:inputHidden");
-        verify(action).setProperty("fieldName", "formId");
-        verify(actions).orderBefore("formId-action", "save");
+        verify(fields).addNode("submissionId", "fmdb:inputHidden");
+        verify(action).setProperty("fieldName", "submissionId");
+        verify(actions).orderBefore("submissionId-action", "save");
     }
 
     @Test
