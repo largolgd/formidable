@@ -25,3 +25,14 @@
  extends = fmdb:inputText, fmdb:inputEmail, fmdb:textarea, fmdb:inputNumber, fmdb:inputRange, fmdb:inputDate, fmdb:inputDatetimeLocal, fmdb:inputColor, fmdb:inputFile, fmdb:checkbox, fmdb:radio, fmdb:select
  itemtype = content
  - helpTextPosition (string, choicelist[resourceBundle]) = 'up' autocreated indexed=no < 'up', 'down', 'both'
+
+// Lets the contributor hide the Previous button and the forward button (Next, or Submit on the
+// last step) of a step. Extends fmdb:step with two switches and a dedicated editor section.
+// Honoured by the step view this module puts in place of Formidable's
+// (src/components/Step/default.server.tsx), which hides the buttons the island renders with a
+// rule of CSS; Formidable itself is not changed.
+[fmdbsamplemix:stepButtons] mixin
+ extends = fmdb:step
+ itemtype = fmdbSampleNavigation
+ - showPreviousBtn (boolean) = true autocreated indexed=no
+ - showNextBtn (boolean) = true autocreated indexed=no

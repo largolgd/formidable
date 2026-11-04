@@ -14,7 +14,6 @@ import {useMultiStep} from '~/hooks/useMultiStep';
 import {useCustomFormValidation, validateInputs} from '~/hooks/useCustomFormValidation';
 import {useFieldActions} from '~/hooks/useFieldActions';
 import {useFormSubmission} from '~/hooks/useFormSubmission';
-import {visibleStepButtons} from '~/utils/stepButtons';
 
 /**
  * Dispatched on the form element once the island has mounted and taken the form over (noValidate set,
@@ -64,7 +63,6 @@ export default function Form({
 	locale,
 	stepLabels,
 	stepIds,
-	stepButtons,
 	captcha,
 	children
 }: Readonly<FormProps>) {
@@ -224,10 +222,6 @@ export default function Form({
 		return !refused;
 	};
 
-	// The buttons of the step on screen: its position says which can exist, the author's settings on the
-	// step can take one away (utils/stepButtons.ts). A form without steps keeps its own Submit.
-	const navButtons = visibleStepButtons({isFirstVisibleStep, isLastStep}, stepButtons?.[currentStep]);
-
 	const hasMessage = message && messageType;
 	// Contributor rich text is trusted, as in every other view of the module (step
 	// intro, compact view, help text) and everywhere else in Jahia. The previous
@@ -350,7 +344,7 @@ export default function Form({
 			<div className="fmdb-form-actions">
 					{isMultiStep ? (
 						<>
-							{navButtons.previous && (
+							{!isFirstVisibleStep && (
 								<button
 									type="button"
 									className="fmdb-btn fmdb-btn-secondary fmdb-prev-btn"
@@ -360,7 +354,7 @@ export default function Form({
 									{previousBtnLabel || t('previousBtn')}
 								</button>
 							)}
-						{navButtons.next && (
+						{!isLastStep && (
 							<button
 								type="button"
 								className="fmdb-btn fmdb-btn-primary fmdb-next-btn"
@@ -370,7 +364,7 @@ export default function Form({
 								{nextBtnLabel || t('nextBtn')}
 							</button>
 						)}
-						{navButtons.submit && (
+						{isLastStep && (
 							<button
 								type="submit"
 								className="fmdb-btn fmdb-btn-primary"

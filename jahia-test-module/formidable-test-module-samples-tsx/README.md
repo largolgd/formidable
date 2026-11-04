@@ -42,6 +42,7 @@ One page per sample:
 | [Two-column fieldset](docs/fieldset-two-columns.md)               | An extra view for a built-in container, picked in the **View** chooser                                                                         |
 | [Custom CSS classes on a fieldset](docs/fieldset-custom-style.md) | A mixin adding a property to a built-in type, in an editor section of its own, and a view applying it                                          |
 | [Help text position](docs/help-text-position.md)                  | A setting added to every field with a help text, shown right under **Help text**, honoured by a rendering that takes the place of Formidable's |
+| [Step buttons](docs/step-buttons.md) | A mixin on a built-in step hiding its Previous and Next / Submit buttons, through a step view and a rule of CSS |
 
 The rules the samples follow (rendering contracts, what a third-party view must keep, how the
 editor form can be shaped) are in
