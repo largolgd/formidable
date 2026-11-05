@@ -7,8 +7,6 @@ import {
     extractLanguage,
     extractWorkspace,
     getOperatorsForSource,
-    groupChoices,
-    groupOf,
     isScalarValueKind,
     clearedProviderConfig,
     normalizeStoredProviderRule,
@@ -17,7 +15,6 @@ import {
     parseRule,
     sanitizeProviderOperator,
     sanitizeOperator,
-    storedGroup,
     TODAY_SENTINEL,
     withStoredValues
 } from './ConditionalLogic.utils';
@@ -281,8 +278,6 @@ export const ConditionalLogicCmp = (props: SelectorProps) => {
         return new Set(
             allEntries
                 .filter((entry): entry is string => typeof entry === 'string' && entry !== value)
-                // A source may be used once per group: the same field can serve two groups.
-                .filter(entry => groupOf(parseRule(entry)) === groupOf(rule))
                 .map(entry => {
                     const siblingRule = parseRule(entry);
                     if (siblingRule.sourceFieldKey) {
@@ -315,7 +310,7 @@ export const ConditionalLogicCmp = (props: SelectorProps) => {
                 })
                 .filter(id => id !== '')
         );
-    }, [field.name, props.form?.values, value, logicIdToSource, sources, rule]);
+    }, [field.name, props.form?.values, value, logicIdToSource, sources]);
 
     const availableSources = useMemo(
         () => sources.filter(source =>
@@ -340,7 +335,7 @@ export const ConditionalLogicCmp = (props: SelectorProps) => {
         const sourceId = item.value ?? '';
         const nextSource = sources.find(source => source.id === sourceId);
         if (!nextSource) {
-            onChange(JSON.stringify({...parseRule(undefined), group: storedGroup(rule.group)}));
+            onChange(JSON.stringify(parseRule(undefined)));
             return;
         }
 
@@ -352,7 +347,6 @@ export const ConditionalLogicCmp = (props: SelectorProps) => {
             sourceNodeId: nextSource.id,
             sourceFieldName: nextSource.name,
             sourceFieldType: nextSource.type,
-            group: rule.group,
             operator: nextOperator,
             value: nextIsScalar ? '' : undefined,
             values: nextIsScalar && nextOperator === 'between' ? ['', ''] : []
@@ -456,7 +450,7 @@ export const ConditionalLogicCmp = (props: SelectorProps) => {
             return;
         }
 
-        onChange(JSON.stringify({...parseRule(undefined), group: storedGroup(rule.group)}));
+        onChange(JSON.stringify(parseRule(undefined)));
     };
 
     const updateProviderRule = (patch: Partial<ConditionalLogicRule>) => {
@@ -467,35 +461,6 @@ export const ConditionalLogicCmp = (props: SelectorProps) => {
             ...patch
         })));
     };
-
-    // The rules of a group are ANDed, the groups ORed: "(A and B) or C" is A and B in group 1, C in group 2.
-    const handleGroupChange = (_event: React.MouseEvent, item: {value?: string}) => {
-        if (!item.value || isUnknownSourceType) {
-            return;
-        }
-
-        if (selectedProvider) {
-            updateProviderRule({group: item.value});
-            return;
-        }
-
-        updateRule({
-            ...rule,
-            group: item.value,
-            sourceNodeId: selectedSource?.id ?? rule.sourceNodeId
-        });
-    };
-
-    const usedGroups = useMemo(() => {
-        const allEntries = field.name ? props.form?.values?.[field.name] : undefined;
-        return Array.isArray(allEntries)
-            ? allEntries.filter((entry): entry is string => typeof entry === 'string').map(entry => groupOf(parseRule(entry)))
-            : [];
-    }, [field.name, props.form?.values]);
-    const groupOptions = groupChoices(usedGroups, groupOf(rule)).map(group => ({
-        label: t('conditionalLogic.groupOption', {group}),
-        value: group
-    }));
 
     const sourceTypeOptions = [
         {label: t('conditionalLogic.sourceTypes.field'), value: 'field'},
@@ -739,17 +704,6 @@ export const ConditionalLogicCmp = (props: SelectorProps) => {
     return (
         <div className="flexCol flexFluid" onBlur={handleRowBlur}>
             <div className="fmdbRuleGrid" data-sel-role="logic-rule">
-                <div title={t('conditionalLogic.groupTooltip')}>
-                    <Dropdown
-                        variant="outlined"
-                        data={groupOptions}
-                        value={groupOf(rule)}
-                        aria-label={t('conditionalLogic.group')}
-                        data-sel-role="logic-group"
-                        isDisabled={field.readOnly || isUnknownSourceType}
-                        onChange={handleGroupChange}
-                    />
-                </div>
                 <div>
                     <Dropdown
                         variant="outlined"

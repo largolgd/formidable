@@ -71,9 +71,6 @@ export interface ConditionalLogicRule {
     operator: LogicOperator;
     value?: string;
     values?: string[];
-    // Rules of one group are ANDed, a field is visible when one of its groups holds. Absent
-    // (as on every rule stored before groups existed) means the default group, '1'.
-    group?: string;
 }
 
 export interface SelectorField {

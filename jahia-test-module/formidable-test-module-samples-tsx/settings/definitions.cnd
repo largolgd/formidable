@@ -25,3 +25,12 @@
  extends = fmdb:inputText, fmdb:inputEmail, fmdb:textarea, fmdb:inputNumber, fmdb:inputRange, fmdb:inputDate, fmdb:inputDatetimeLocal, fmdb:inputColor, fmdb:inputFile, fmdb:checkbox, fmdb:radio, fmdb:select
  itemtype = content
  - helpTextPosition (string, choicelist[resourceBundle]) = 'up' autocreated indexed=no < 'up', 'down', 'both'
+
+// Alternative display rules for a fieldset: each value is a group, "field=value&field2=value2";
+// the rules of a group are ANDed, the fieldset is shown when one group holds (OR between groups).
+// Evaluated in the browser by the "Fieldset - Show when any group holds" view of this module
+// (src/components/Fieldset/showWhenAny.server.tsx); Formidable's own conditional display is untouched.
+[fmdbsamplemix:showWhenAny] mixin
+ extends = fmdb:fieldset
+ itemtype = fmdbSampleStyle
+ - showWhenAnyOf (string) multiple indexed=no
