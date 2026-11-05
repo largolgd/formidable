@@ -1,10 +1,15 @@
 <jnt = 'http://www.jahia.org/jahia/nt/1.0'>
+<jmix = 'http://www.jahia.org/jahia/mix/1.0'>
 <fmdb = 'http://www.jahia.org/jahia/fmdb/nt/1.0'>
 <fmdbmix = 'http://www.jahia.org/jahia/fmdb/mix/1.0'>
 <fmdbsample = 'http://www.jahia.org/jahia/fmdbsample/nt/1.0'>
 <fmdbsamplemix = 'http://www.jahia.org/jahia/fmdb/sample/mix/1.0'>
 
-[fmdbsample:logSubmissionAction] > jnt:content, fmdbmix:formAction, mix:title
+// Marker: the action type comes from a third-party module, not from Formidable. Built-in actions never
+// carry it, so its absence means standard. Declared as a supertype of every action type of this module.
+[fmdbsamplemix:customAction] > jmix:droppableContent mixin
+
+[fmdbsample:logSubmissionAction] > jnt:content, fmdbmix:formAction, fmdbsamplemix:customAction, mix:title
 
 // The opt-in of the sample response enricher: only a form carrying this mixin gets the sample block
 // in the JSON body of an accepted submission. An enricher is asked for every submission of the
@@ -27,7 +32,7 @@
 // value. The visitor's message, the trigger, the severity and the outage rule reach the type through the
 // engine's fmdbmix:fieldActionFeedback, unasked. Exercised by the test suite against the pre-check endpoint
 // and the submission pipeline.
-[fmdbsample:blockedWordsAction] > jnt:content, fmdbmix:fieldAction, mix:title
+[fmdbsample:blockedWordsAction] > jnt:content, fmdbmix:fieldAction, fmdbsamplemix:customAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_blockedWordsAction') autocreated i18n
  - words (string) multiple indexed=no
 
@@ -35,7 +40,7 @@
 // address exist? It asks the domain name system, needs no provider and no configuration, and refuses one thing only
 // — a domain the resolver denies, which is the mistyped domain. Shipped as a sample rather than by the engine: the
 // engine provides the mechanism, a project decides which checks its forms deserve.
-[fmdbsample:emailDomainAction] > jnt:content, fmdbmix:fieldAction, mix:title
+[fmdbsample:emailDomainAction] > jnt:content, fmdbmix:fieldAction, fmdbsamplemix:customAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_emailDomainAction') autocreated i18n
 
 // A third field action of the samples, and an example implementation rather than a supported connector: the
@@ -45,14 +50,14 @@
 // (org.jahia.test.modules.formidable.samples.experian), and the service's confidence becomes the verdict
 // (docs/architecture/field-actions.md, "Email verification behind a provider"). Exercised by the test suite against
 // the samples' own double of the service, ExperianStubServlet, which the samples' configuration points at.
-[fmdbsample:experianEmailAction] > jnt:content, fmdbmix:fieldAction, mix:title
+[fmdbsample:experianEmailAction] > jnt:content, fmdbmix:fieldAction, fmdbsamplemix:customAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_experianEmailAction') autocreated i18n
 
 // The same check against another service, ZeroBounce, on the same engine base — the shape to copy for a third:
 // the type, the action's own configuration (org.jahia.test.modules.formidable.samples.zerobounce), the mapping of
 // the service's vocabulary, nothing else. ZeroBounce reads its key off the URL, as a query parameter. Exercised
 // against ZeroBounceStubServlet.
-[fmdbsample:zeroBounceEmailAction] > jnt:content, fmdbmix:fieldAction, mix:title
+[fmdbsample:zeroBounceEmailAction] > jnt:content, fmdbmix:fieldAction, fmdbsamplemix:customAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_zeroBounceEmailAction') autocreated i18n
 
 // Writes a unique, time-based identifier (20261026-143012-4F2A: UTC date, time, four random hex digits) into
@@ -60,7 +65,7 @@
 // that use the value (save, email, forward) in the form's action list: they run in order and read the value
 // this action has put in the submission. Whatever the browser sent for that field is overwritten. It never
 // writes to the repository, so it stays available while the platform is in read-only maintenance.
-[fmdbsample:submissionIdAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, mix:title
+[fmdbsample:submissionIdAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, fmdbsamplemix:customAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_submissionIdAction') autocreated i18n
  - fieldName (string) mandatory indexed=no
 
@@ -85,7 +90,7 @@
 // value, the contact option of the rule is added to the main recipients. A rule is a field, a value and a
 // contact, the same shape as a conditional display rule; the field is kept by its node identifier, so a
 // rename does not break it.
-[fmdbsample:emailContentToContactAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, mix:title
+[fmdbsample:emailContentToContactAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, fmdbsamplemix:customAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_emailContentToContactAction') autocreated i18n
  - contacts (weakreference, picker[type='content']) multiple < 'fmdbsample:contactFormOption'
  - customRecipients (string) indexed=no
@@ -99,7 +104,7 @@
 // "Save to JCR, without the private fields": the engine's Save to JCR, minus the fields the author marked
 // private. A form action of this module (SavePublicToJcrFormAction), which hands the engine's own storage service
 // the values it may keep. Used instead of the standard fmdb:save2jcrAction, not next to it.
-[fmdbsample:savePublicToJcrAction] > jnt:content, fmdbmix:formAction, mix:title
+[fmdbsample:savePublicToJcrAction] > jnt:content, fmdbmix:formAction, fmdbsamplemix:customAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbsample_savePublicToJcrAction') autocreated i18n
 
 // The author's "private field" switch, closing the Field settings section of a field's editor (placed there by

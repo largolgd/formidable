@@ -7,6 +7,10 @@
 <fmdbsampletsx = 'http://www.jahia.org/jahia/fmdbsampletsx/nt/1.0'>
 <fmdbsamplemix = 'http://www.jahia.org/jahia/fmdb/sample/mix/1.0'>
 
+// Marker: the field type comes from a third-party module, not from Formidable. Built-in fields never
+// carry it, so its absence means standard. Declared as a supertype of every field type of this module.
+[fmdbsamplemix:customField] > jmix:droppableContent mixin
+
 // Adds contributor-defined CSS class names to a content type.
 // Demonstrates how a third-party module can extend a Formidable content type
 // with additional properties and a dedicated editor section.
@@ -21,7 +25,7 @@
 // that is not a radio button: unchecking it withdraws the answer, and the form stays. It posts "true" as
 // fmdbext:consent does, so it carries the same markers: a conditional-logic source (is true / is false), and
 // a value a jCustomer profile can hold.
-[fmdbsample:quickConfirm] > jnt:content, fmdbmix:element, fmdbmix:submittableField, fmdbmix:profileMappableField, fmdbmix:booleanField
+[fmdbsample:quickConfirm] > jnt:content, fmdbmix:element, fmdbsamplemix:customField, fmdbmix:submittableField, fmdbmix:profileMappableField, fmdbmix:booleanField
  - required (boolean) = false
 
 // A hidden field whose value comes from a request parameter of the page — a GET parameter of the URL or
@@ -29,6 +33,6 @@
 // fmdbmix:submittableField offers the field-actions switch, fmdbmix:profileMappableField the jExperience
 // profile mapping, fmdbmix:textField says what it submits. The view is
 // src/components/Input/RequestParam/default.server.tsx.
-[fmdbsampletsx:inputRequestParam] > jnt:content, fmdbmix:element, fmdbmix:submittableField, fmdbmix:profileMappableField, fmdbmix:textField
+[fmdbsampletsx:inputRequestParam] > jnt:content, fmdbmix:element, fmdbsamplemix:customField, fmdbmix:submittableField, fmdbmix:profileMappableField, fmdbmix:textField
  - requestParameter (string) mandatory indexed=no < '^[A-Za-z0-9_.-]+$'
  - defaultValue (string) indexed=no
