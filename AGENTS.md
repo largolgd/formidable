@@ -59,6 +59,10 @@ You are helping develop a **Jahia JavaScript Module** — a React-based template
 
 ## Formidable Conventions
 
+### Core modules are frozen — extend externally
+
+Never modify `formidable-elements`, `formidable-engine`, `formidable-jexperience-engine`, `formidable-forms-import`, `formidable-extended-inputs` (nor `packages/formidable`) for a feature. New work goes in an extension module (`jahia-test-module/formidable-test-module-samples-java` / `-samples-tsx`, or a sibling). If no public extension point covers the need, stop and ask. Full procedure: `.claude/skills/formidable-extend-externally/SKILL.md`.
+
 ### CND Namespaces & Ownership
 
 - `fmdb:` — concrete types (`fmdb:form`, `fmdb:step`, `fmdb:inputText`, …)
