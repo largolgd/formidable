@@ -16,3 +16,12 @@ formidable-field-action:
   grants:
     - api: formidable-field-action
       node: none
+formidable-prefill:
+  description: Can read the value a prefilled hidden field of a Formidable form shows
+  metadata:
+    visible: false
+  auto_apply:
+    - origin: hosted
+  grants:
+    - api: formidable-prefill
+      node: none

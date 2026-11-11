@@ -13,6 +13,11 @@
 		"label": "Champ caché",
 		"empty": "Aucune valeur"
 	},
+	"fmdb_inputHiddenPrefilled": {
+		"label": "Champ caché pré-rempli",
+		"from": "Valeur de session « {{key}} »",
+		"noKey": "Aucune clé définie"
+	},
 	"fmdb_inputCheckbox": {
 		"error": "Veuillez sélectionner au moins une option"
 	},
