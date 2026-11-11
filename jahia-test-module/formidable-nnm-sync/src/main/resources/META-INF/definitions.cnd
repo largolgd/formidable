@@ -6,7 +6,13 @@
 // its presence tells the module to send the form's configuration at each publication, and, as a form
 // action, it sends each submission. It has no setting of its own: the URLs are the operator's, in
 // org.jahia.test.modules.formidable.nnmsync.cfg, never in the content.
+// An optional condition limits the submissions that are sent: when conditionField (the name of a field of
+// the form, as submitted) is set, a submission goes only if that field contains (or equals) conditionValue,
+// compared without regard to case. It does not apply to the configuration sent at publication.
 // It writes nothing to the repository when a submission arrives (the request goes out from a thread of
 // the module), hence readOnlyCompatibleAction: the form is not blocked during a read-only maintenance.
 [fmdbnnm:syncAction] > jnt:content, fmdbmix:formAction, fmdbmix:readOnlyCompatibleAction, mix:title
  - jcr:title (string) = resourceBundle('fmdbnnm_syncAction') autocreated i18n
+ - conditionField (string) indexed=no
+ - conditionOperator (string, choicelist) = 'contains' indexed=no < 'contains', 'equals'
+ - conditionValue (string) indexed=no

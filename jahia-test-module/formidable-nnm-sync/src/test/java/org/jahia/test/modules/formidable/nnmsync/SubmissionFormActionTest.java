@@ -82,6 +82,33 @@ class SubmissionFormActionTest {
     }
 
     @Test
+    void aSubmissionThatDoesNotSatisfyTheConditionIsNotSent() throws Exception {
+        formWithOneEmailField();
+        Nodes.string(actionNode, SendCondition.FIELD, "email");
+        Nodes.string(actionNode, SendCondition.OPERATOR, "contains");
+        Nodes.string(actionNode, SendCondition.VALUE, "@acme.com");
+        when(state.get("uuid-1")).thenReturn(Optional.of(new SyncState.Entry(4, "h")));
+
+        action.execute(actionNode, request, session, Map.of("email", List.of("john@doe.com")), List.of());
+
+        verify(dispatcher, never()).send(anyString(), anyString(), anyString());
+        verify(synchronizer, never()).syncLater(anyString(), org.mockito.ArgumentMatchers.anyBoolean());
+    }
+
+    @Test
+    void aSubmissionThatSatisfiesTheConditionIsSent() throws Exception {
+        formWithOneEmailField();
+        Nodes.string(actionNode, SendCondition.FIELD, "email");
+        Nodes.string(actionNode, SendCondition.OPERATOR, "contains");
+        Nodes.string(actionNode, SendCondition.VALUE, "@doe.com");
+        when(state.get("uuid-1")).thenReturn(Optional.of(new SyncState.Entry(4, "h")));
+
+        action.execute(actionNode, request, session, Map.of("email", List.of("john@doe.com")), List.of());
+
+        verify(dispatcher).send(eq("uuid-1"), anyString(), anyString());
+    }
+
+    @Test
     void nothingThatGoesWrongReachesTheVisitor() throws Exception {
         formWithOneEmailField();
         when(state.get(any())).thenThrow(new RepositoryException("down"));

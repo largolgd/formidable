@@ -1,76 +1,6 @@
-import { jsxs, jsx, Fragment } from "react/jsx-runtime";
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { jahiaComponent, Render, AddResources, buildModuleFileUrl, Island } from "@jahia/javascript-modules-library";
 import { useRef } from "react";
-function r(e) {
-  var t, f, n = "";
-  if ("string" == typeof e || "number" == typeof e) n += e;
-  else if ("object" == typeof e) if (Array.isArray(e)) {
-    var o = e.length;
-    for (t = 0; t < o; t++) e[t] && (f = r(e[t])) && (n && (n += " "), n += f);
-  } else for (f in e) e[f] && (n && (n += " "), n += f);
-  return n;
-}
-function clsx() {
-  for (var e, t, f = 0, n = "", o = arguments.length; f < o; f++) (e = arguments[f]) && (t = r(e)) && (n && (n += " "), n += t);
-  return n;
-}
-jahiaComponent(
-  {
-    componentType: "view",
-    nodeType: "fmdb:fieldset",
-    name: "customStyle",
-    displayName: "Fieldset - Custom CSS class names"
-  },
-  ({ "jcr:title": title, customCssClassname }, { currentNode }) => {
-    return /* @__PURE__ */ jsxs("fieldset", { className: clsx("fmdb-fieldset", customCssClassname), children: [
-      title && /* @__PURE__ */ jsx("legend", { className: "fmdb-fieldset-legend", children: title }),
-      /* @__PURE__ */ jsx(
-        Render,
-        {
-          node: currentNode,
-          view: "hidden.logic",
-          parameters: {
-            className: "fmdb-fieldset-elements",
-            childClassName: "fmdb-form-element"
-          }
-        }
-      )
-    ] });
-  }
-);
-const grid = "_grid_1usgs_1";
-const item = "_item_1usgs_15";
-const classes = {
-  grid,
-  item
-};
-jahiaComponent(
-  {
-    componentType: "view",
-    nodeType: "fmdb:fieldset",
-    name: "twoColumns",
-    displayName: "Fieldset - Two columns"
-  },
-  ({ "jcr:title": title }, { currentNode }) => {
-    return /* @__PURE__ */ jsxs(Fragment, { children: [
-      /* @__PURE__ */ jsx(AddResources, { type: "css", resources: buildModuleFileUrl("dist/assets/style.css") }),
-      /* @__PURE__ */ jsxs("fieldset", { children: [
-        title && /* @__PURE__ */ jsx("legend", { children: title }),
-        /* @__PURE__ */ jsx(
-          Render,
-          {
-            node: currentNode,
-            view: "hidden.logic",
-            parameters: {
-              className: classes.grid,
-              childClassName: classes.item
-            }
-          }
-        )
-      ] })
-    ] });
-  }
-);
 const helpTextId = (nodeId) => `help-${nodeId}`;
 function HelpText({ id, text, decorative = false }) {
   if (!text) {
@@ -173,6 +103,130 @@ const useMask = ({ mask }) => {
     formatValue: (value) => mask ? applyMask(value || "", mask) : value
   };
 };
+function r(e) {
+  var t, f, n = "";
+  if ("string" == typeof e || "number" == typeof e) n += e;
+  else if ("object" == typeof e) if (Array.isArray(e)) {
+    var o = e.length;
+    for (t = 0; t < o; t++) e[t] && (f = r(e[t])) && (n && (n += " "), n += f);
+  } else for (f in e) e[f] && (n && (n += " "), n += f);
+  return n;
+}
+function clsx() {
+  for (var e, t, f = 0, n = "", o = arguments.length; f < o; f++) (e = arguments[f]) && (t = r(e)) && (n && (n += " "), n += t);
+  return n;
+}
+jahiaComponent(
+  {
+    componentType: "view",
+    nodeType: "fmdb:fieldset",
+    name: "customStyle",
+    displayName: "Fieldset - Custom CSS class names"
+  },
+  ({ "jcr:title": title, helpText, customCssClassname }, { currentNode }) => {
+    const helpId = helpText ? helpTextId(currentNode.getIdentifier()) : void 0;
+    return /* @__PURE__ */ jsxs("fieldset", { className: clsx("fmdb-fieldset", customCssClassname), "aria-describedby": helpId, children: [
+      title && /* @__PURE__ */ jsx("legend", { className: "fmdb-fieldset-legend", children: title }),
+      /* @__PURE__ */ jsx(HelpText, { id: helpId, text: helpText }),
+      /* @__PURE__ */ jsx(
+        Render,
+        {
+          node: currentNode,
+          view: "hidden.logic",
+          parameters: {
+            className: "fmdb-fieldset-elements",
+            childClassName: "fmdb-form-element"
+          }
+        }
+      )
+    ] });
+  }
+);
+const grid = "_grid_1usgs_1";
+const item = "_item_1usgs_15";
+const classes = {
+  grid,
+  item
+};
+jahiaComponent(
+  {
+    componentType: "view",
+    nodeType: "fmdb:fieldset",
+    name: "twoColumns",
+    displayName: "Fieldset - Two columns"
+  },
+  ({ "jcr:title": title, helpText }, { currentNode }) => {
+    const helpId = helpText ? helpTextId(currentNode.getIdentifier()) : void 0;
+    return /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx(AddResources, { type: "css", resources: buildModuleFileUrl("dist/assets/style.css") }),
+      /* @__PURE__ */ jsxs("fieldset", { "aria-describedby": helpId, children: [
+        title && /* @__PURE__ */ jsx("legend", { children: title }),
+        /* @__PURE__ */ jsx(HelpText, { id: helpId, text: helpText }),
+        /* @__PURE__ */ jsx(
+          Render,
+          {
+            node: currentNode,
+            view: "hidden.logic",
+            parameters: {
+              className: classes.grid,
+              childClassName: classes.item
+            }
+          }
+        )
+      ] })
+    ] });
+  }
+);
+jahiaComponent(
+  {
+    componentType: "view",
+    nodeType: "fmdbsample:quickConfirm",
+    name: "default"
+  },
+  ({ "jcr:title": label, required }, { currentNode }) => {
+    const inputId = `input-${currentNode.getIdentifier()}`;
+    return /* @__PURE__ */ jsxs("div", { className: "fmdb-form-group fmdbsample-quick-confirm", "data-fmdb-advance-on-change": "true", children: [
+      /* @__PURE__ */ jsx(
+        "input",
+        {
+          type: "checkbox",
+          id: inputId,
+          name: currentNode.getName(),
+          className: "fmdb-form-control",
+          value: "true",
+          required
+        }
+      ),
+      /* @__PURE__ */ jsxs("label", { htmlFor: inputId, className: "fmdb-checkbox-label", children: [
+        label,
+        required && /* @__PURE__ */ jsx("span", { className: "fmdb-required-indicator", "aria-hidden": "true", children: "*" })
+      ] })
+    ] });
+  }
+);
+jahiaComponent(
+  {
+    componentType: "view",
+    nodeType: "fmdbsampletsx:inputRequestParam",
+    name: "default"
+  },
+  ({ "jcr:title": title, requestParameter, defaultValue = "" }, { currentNode, renderContext }) => {
+    const name = currentNode.getName();
+    if (renderContext.isEditMode()) {
+      return /* @__PURE__ */ jsxs("div", { className: "fmdb-authoring-hidden-field", children: [
+        /* @__PURE__ */ jsx("span", { className: "fmdb-authoring-hidden-field-title", children: title || name }),
+        /* @__PURE__ */ jsxs("span", { className: "fmdb-authoring-hidden-field-value", children: [
+          "?",
+          requestParameter ?? "…",
+          defaultValue ? ` (${defaultValue})` : ""
+        ] }),
+        /* @__PURE__ */ jsx("input", { type: "hidden", name, value: defaultValue, readOnly: true })
+      ] });
+    }
+    const fromRequest = requestParameter ? renderContext.getRequest().getParameter(requestParameter) : null;
+    return /* @__PURE__ */ jsx("input", { type: "hidden", name, value: fromRequest || defaultValue });
+  }
+);
 const MaskedTextInput = (function(v) {
   if (typeof v === "function" || typeof v === "object" && v)
     Object.defineProperty(v, "__filename", {

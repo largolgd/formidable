@@ -22,6 +22,10 @@ import java.util.Map;
  * the visitor has been answered. This action builds the body (a few property reads, no network) and
  * queues it; it never throws, so that nothing the NNM system does, or this module, can fail a submission.
  *
+ * <p>When the author set a condition on the action (a field that contains or equals a value, see
+ * {@link SendCondition}), only the submissions that satisfy it go; the others are saved and handled by
+ * the other actions as usual.</p>
+ *
  * <p>The body carries the configuration version the system last accepted
  * ({@link SyncState}). A form that was never synchronised has none: nothing is sent, and its
  * configuration is asked for, so that the next submission can go.</p>
@@ -71,6 +75,11 @@ public class SubmissionFormAction implements FormAction {
             List<SubmittedFile> files
     ) {
         try {
+            // The author's rule comes first: a submission it holds back is neither sent nor a reason to send the configuration
+            if (!SendCondition.allows(SendCondition.read(actionNode), parameters)) {
+                log.debug("[SubmissionFormAction] Action '{}': the send condition is not met, nothing sent.", actionNode.getPath());
+                return;
+            }
             // action -> actions list -> form
             JCRNodeWrapper form = actionNode.getParent().getParent();
             if (!form.isNodeType(FmdbMixin.FORM_ROOT)) {

@@ -4,7 +4,7 @@
 	"specVersion": "1.4",
 	"version": 1,
 	"metadata": {
-		"timestamp": "2026-10-26T14:38:26.892Z",
+		"timestamp": "2026-11-05T13:41:38.891Z",
 		"tools": [
 			{
 				"name": "rollup-plugin-sbom",
@@ -73,9 +73,9 @@
 		"component": {
 			"type": "application",
 			"name": "formidable-test-module-samples-tsx",
-			"version": "0.5.0",
-			"bom-ref": "pkg:npm/formidable-test-module-samples-tsx@0.5.0",
-			"purl": "pkg:npm/formidable-test-module-samples-tsx@0.5.0"
+			"version": "0.6.0",
+			"bom-ref": "pkg:npm/formidable-test-module-samples-tsx@0.6.0",
+			"purl": "pkg:npm/formidable-test-module-samples-tsx@0.6.0"
 		}
 	},
 	"components": [
@@ -115,7 +115,7 @@
 	],
 	"dependencies": [
 		{
-			"ref": "pkg:npm/formidable-test-module-samples-tsx@0.5.0",
+			"ref": "pkg:npm/formidable-test-module-samples-tsx@0.6.0",
 			"dependsOn": [
 				"pkg:npm/clsx@2.1.1?vcs_url=git%2Bhttps%3A%2F%2Fgithub.com%2Flukeed%2Fclsx.git"
 			]
