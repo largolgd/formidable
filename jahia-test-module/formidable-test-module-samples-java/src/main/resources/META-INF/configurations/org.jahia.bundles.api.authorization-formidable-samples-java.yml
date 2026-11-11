@@ -1,0 +1,9 @@
+formidable-samples-session-value:
+  description: Can read the value a session-filled hidden field of the samples shows
+  metadata:
+    visible: false
+  auto_apply:
+    - origin: hosted
+  grants:
+    - api: formidable-samples-session-value
+      node: none
