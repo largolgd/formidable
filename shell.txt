@@ -1,3 +1,9 @@
+#!/bin/bash
+
+# Global configuration
+JAHIA_HOME="/appli/jahia"
+TOMCAT_HOME="$JAHIA_HOME/tomcat"
+LOG_DIR="$TOMCAT_HOME/logs"
 
 clean_old_tomcat_logs() {
     local log_dir="$JAHIA_HOME/tomcat/logs"
