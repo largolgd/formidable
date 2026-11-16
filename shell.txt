@@ -1,0 +1,75 @@
+
+clean_old_tomcat_logs() {
+    local log_dir="$JAHIA_HOME/tomcat/logs"
+    local errors_dir
+    local dir_name
+
+    echo "Cleaning Tomcat logs older than 30 days..."
+
+    if [[ ! -d "$log_dir" ]]; then
+        echo "ERROR: Log directory not found: $log_dir"
+        return 1
+    fi
+
+    # Delete dated log files older than 30 days
+    find "$log_dir" -maxdepth 1 -type f \
+        -regextype posix-extended \
+        -regex '.*/(access-log|catalina|host-manager|jahia|jahia_access|localhost)[._][0-9]{4}-[0-9]{2}-[0-9]{2}[.](txt|log)' \
+        -mtime +30 \
+        -print \
+        -delete
+
+    # Delete dated directories older than 30 days
+    for dir_name in jahia-errors jahia-heaps jahia-threads; do
+        errors_dir="$log_dir/$dir_name"
+
+        if [[ -d "$errors_dir" ]]; then
+            find "$errors_dir" -mindepth 1 -maxdepth 1 -type d \
+                -regextype posix-extended \
+                -regex '.*/[0-9]{4}_[0-9]{2}_[0-9]{2}' \
+                -mtime +30 \
+                -print \
+                -exec rm -rf {} +
+        fi
+    done
+
+    echo "Tomcat log cleanup completed."
+}
+
+
+check_disk_space() {
+    local required_kb=$((20 * 1024 * 1024)) # 20 GiB
+    local check_path="$1"
+    local available_kb
+
+    echo "Checking available disk space..."
+
+    if [[ ! -d "$check_path" ]]; then
+        echo "ERROR: Directory not found: $check_path"
+        return 1
+    fi
+
+    available_kb=$(df -Pk "$check_path" | awk 'NR==2 {print $4}')
+
+    if [[ ! "$available_kb" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: Unable to determine available disk space."
+        return 1
+    fi
+
+    echo "Available space: $((available_kb / 1024 / 1024)) GiB"
+    echo "Required space: 20 GiB"
+
+    if (( available_kb < required_kb )); then
+        echo "ERROR: Insufficient disk space."
+        echo "At least 20 GiB of free space is required."
+        return 1
+    fi
+
+    echo "Disk space check passed."
+    return 0
+}
+
+if ! check_disk_space "$JAHIA_HOME"; then
+    echo "Migration aborted."
+    exit 1
+fi
