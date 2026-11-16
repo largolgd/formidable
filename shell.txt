@@ -5,6 +5,14 @@ JAHIA_HOME="/appli/jahia"
 TOMCAT_HOME="$JAHIA_HOME/tomcat"
 LOG_DIR="$TOMCAT_HOME/logs"
 
+# Jahia versions
+JAHIA_CURRENT_VERSION="8.1.6.1"
+JAHIA_TARGET_VERSION="8.2.3.0"
+
+# Patch configuration
+PATCH_DIR="/appli/patches"
+PATCH_JAR="Jahia-EnterpriseDistribution-Upgrade-${JAHIA_CURRENT_VERSION}_to_${JAHIA_TARGET_VERSION}.jar"
+
 clean_old_tomcat_logs() {
     local log_dir="$JAHIA_HOME/tomcat/logs"
     local errors_dir
@@ -79,3 +87,30 @@ if ! check_disk_space "$JAHIA_HOME"; then
     echo "Migration aborted."
     exit 1
 fi
+
+apply_jahia_patch() {
+    local patch_jar="$1"
+
+    echo "Starting Jahia patch..."
+
+    if [[ ! -f "$patch_jar" ]]; then
+        echo "ERROR: Patch file not found: $patch_jar"
+        return 1
+    fi
+
+    java -jar "$patch_jar" -console <<EOF
+A
+A
+A
+EOF
+
+    local exit_code=$?
+
+    if [[ $exit_code -ne 0 ]]; then
+        echo "ERROR: Jahia patch failed (exit code: $exit_code)."
+        return 1
+    fi
+
+    echo "Jahia patch completed successfully."
+    return 0
+}
