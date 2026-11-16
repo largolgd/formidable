@@ -4,6 +4,7 @@
 JAHIA_HOME="/appli/jahia"
 TOMCAT_HOME="$JAHIA_HOME/tomcat"
 LOG_DIR="$TOMCAT_HOME/logs"
+MIN_DISK_SPACE_GB=20
 
 # Jahia versions
 JAHIA_CURRENT_VERSION="8.1.6.1"
@@ -52,16 +53,12 @@ clean_old_tomcat_logs() {
 
 
 check_disk_space() {
-    local required_kb=$((20 * 1024 * 1024)) # 20 GiB
-    local check_path="$1"
+    local required_gb="${1:-$MIN_DISK_SPACE_GB}"
+    local check_path="${2:-$JAHIA_HOME}"
     local available_kb
+    local required_kb=$((required_gb * 1024 * 1024))
 
     echo "Checking available disk space..."
-
-    if [[ ! -d "$check_path" ]]; then
-        echo "ERROR: Directory not found: $check_path"
-        return 1
-    fi
 
     available_kb=$(df -Pk "$check_path" | awk 'NR==2 {print $4}')
 
@@ -70,12 +67,11 @@ check_disk_space() {
         return 1
     fi
 
-    echo "Available space: $((available_kb / 1024 / 1024)) GiB"
-    echo "Required space: 20 GiB"
+    echo "Available: $((available_kb / 1024 / 1024)) GiB"
+    echo "Required: ${required_gb} GiB"
 
     if (( available_kb < required_kb )); then
         echo "ERROR: Insufficient disk space."
-        echo "At least 20 GiB of free space is required."
         return 1
     fi
 
