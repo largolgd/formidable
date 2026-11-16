@@ -110,3 +110,30 @@ EOF
     echo "Jahia patch completed successfully."
     return 0
 }
+
+
+clean_tomcat_temp() {
+    echo "Cleaning Tomcat temporary directories..."
+
+    local dir
+
+    for dir in "$TOMCAT_HOME/temp" "$TOMCAT_HOME/work"; do
+        if [[ -d "$dir" ]]; then
+            echo "Cleaning $dir..."
+            rm -rf -- "$dir" || {
+                echo "ERROR: Unable to clean $dir"
+                return 1
+            }
+        else
+            echo "Directory not found, skipping: $dir"
+        fi
+    done
+
+    echo "Tomcat temporary directories cleaned successfully."
+}
+
+# Clean Tomcat temporary directories
+if ! clean_tomcat_temp; then
+    echo "Cleanup failed. Migration aborted."
+    exit 1
+fi
